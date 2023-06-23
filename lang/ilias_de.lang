@@ -1,0 +1,35 @@
+jupyter_qst_type#:#Jupyter Frage
+tab_settings#:#Jupyter-Einstellungen
+form_tab_settings#:#Einstellungen zum Jupyter-Fragen Plugin
+form_tab_settings_activate#:#Fragen-Plugin aktivieren
+form_tab_settings_ecs_server#:#ECS-Server
+form_tab_settings_ecs_server_info#:#Bitte wählen sie einen ECS-Server aus, der für die Synchronisation der Fragen und Antworten genutzt werden soll.
+plang_C#:#C (Testsystem)
+plang_C++#:#C++ (Testsystem)
+plang_Java#:#Java (Testsystem)
+plang_DuMux#:#DuMux (Testsystem)
+plang_Matlab#:#Matlab (Testsystem)
+plang_Octave#:#Octave (Testsystem)
+plang_C_P#:#C (Produktivsystem)
+plang_C++_P#:#C++ (Produktivsystem)
+plang_Java_P#:#Java (Produktivsystem)
+plang_DuMux_P#:#DuMux (Produktivsystem)
+plang_Matlab_P#:#Matlab (Produktivsystem)
+plang_Octave_P#:#Octave (Produktivsystem)
+form_tab_settings_section_languages#:#Zuordnung der Programmiersprachen
+editor_lang#:#Programmiersprache
+ecs_mid#:#Mid
+editor#:#Fragen-Editor
+editor_start#:#Starte Editor
+prog_lang_info#:#Nach dem Speichern kann die Programmiersprache für diese Aufgabe nicht mehr geändert werden.
+store_results#:#Speichern der Rechenergebnisse
+store_results_info#:#Wenn aktiviert, werden die Ergebnisse der Lösungen gespeichert, um sie bei der manuellen Bewertung nicht neu berechnen zu müssen.
+form_tab_settings_loglevel#:#Log-Level
+form_tab_settings_eval_backend#:#Server für Auswertungen
+form_tab_settings_eval_backend_info#:#Bitte wählen sie den Server aus, der automatische Auswertungen durchführen soll.
+form_tab_settings_loglevel#:#Log-Level
+auto_scoring#:#Automatische Korrektur
+auto_scoring_info#:#Wenn aktiviert, wird automatisch nach Abgabe einer Lösung eine Bewertung angefordert. Bitte fügen sie dem Aufgabentext einen Bewertungs-Code hinzu.
+form_tab_settings_mid#:#Server für Empfang automatischer Auswertungen
+language_productive#:#(Produktivsystem)
+language_test#:#(Testsystem)
