@@ -15,11 +15,16 @@ include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
  */
 class assJupyterGUI extends assQuestionGUI
 {
+    private ilJupyterRESTController $rest_ctrl;
+
+
     public function __construct($a_id = -1)
     {
         parent::__construct($a_id);
         $this->object = new assJupyter();
         $this->newUnitId = null;
+
+        $this->rest_ctrl = new ilJupyterRESTController();
 
         if ($a_id >= 0) {
             $this->object->loadFromDb($a_id);
@@ -113,7 +118,7 @@ class assJupyterGUI extends assQuestionGUI
         return $this->object;
     }
 
-    protected function initEditQuestionForm($a_show_editor = FALSE)
+    protected function initEditQuestionForm()
     {
         global $lng;
 
@@ -139,6 +144,7 @@ class assJupyterGUI extends assQuestionGUI
 
         // points
         $points = new ilNumberInputGUI($lng->txt("points"), "points");
+        $p = $this->object->getPoints();
         $points->setValue($this->object->getPoints());
         $points->setRequired(TRUE);
         $points->setSize(3);
@@ -175,46 +181,27 @@ class assJupyterGUI extends assQuestionGUI
         $hidden_eval->setValue($this->getJupyterQuestion()->getJupyterEvaluation());
         $form->addItem($hidden_eval);
 
+        // add jupyter session id
+        $hidden_jupyter_session = new ilHiddenInputGUI('jupyter_session_id');
+        $hidden_jupyter_session->setValue($this->getJupyterQuestion()->getJupyterUser());
+        $form->addItem($hidden_jupyter_session);
+
+
         #$this->addQuestionFormCommandButtons($form);
         $form->addCommandButton("save", $this->lng->txt("save"));
 
-        $editor_form = new ilJupyterEditorFormGUI($this->getPlugin()->txt('editor'), 'editor', $this->getJupyterQuestion());
-        $editor_form->showEditor($this->getJupyterQuestion()->getJupyterSubId() && $a_show_editor);
+        $jupyter_form_frame = new ilJupyterEditorFormGUI($this->getPlugin()->txt('editor'), 'editor', $this->getJupyterQuestion());
+        $jupyter_session_id = $this->object->getJupyterUser();
+        if ($jupyter_session_id) {
+            $jupyter_session = new ilJupyterSession($jupyter_session_id);
+            $jupyter_form_frame->setJupyterUserCredentials($jupyter_session->getUserCredentials());
+        }
 
-        $form->addItem($editor_form);
+        $form->addItem($jupyter_form_frame);
+
         return $form;
     }
 
-    protected function initEditor()
-    {
-        global $DIC;
-
-        $form = $this->initEditQuestionForm();
-
-        if (!$form->checkInput()) {
-            $form->setValuesByPost();
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('err_check_input'), true);
-            $this->editQuestion($form);
-            return TRUE;
-        }
-
-        // form valid
-        $this->writeJupyterLabQuestionFromForm($form);
-
-        $this->getJupyterQuestion()->deleteSubParticipant();
-        $this->addSubParticipant();
-
-        $this->getJupyterQuestion()->deleteExercise();
-        $this->createExercise();
-
-        // initialize form again with editor
-        $form = $this->initEditQuestionForm(TRUE);
-
-        $this->getJupyterQuestion()->saveToDb();
-
-
-        return $this->editQuestion($form);
-    }
 
     /**
      * Create a new solution on ecs for the client, using data from ilias database.
@@ -252,23 +239,9 @@ class assJupyterGUI extends assQuestionGUI
         return 0;
     }
 
-    /**
-     * Create a new solution
-     * @return int
-     */
-    protected function createEvaluation()
-    {
-        return $this->getJupyterQuestion()->createEvaluation();
-    }
 
-    /**
-     * Create a new solution
-     * @return int
-     */
-    protected function createResult($a_active_id, $a_pass)
-    {
-        $this->getJupyterQuestion()->createResult($a_active_id, $a_pass);
-    }
+
+
 
     /**
      * Create exercise
@@ -279,18 +252,55 @@ class assJupyterGUI extends assQuestionGUI
     }
 
 
-    protected function addSubParticipant()
-    {
-        return $this->getJupyterQuestion()->addSubParticipant();
-    }
-
     /**
      * Show edit question form
      * @param ilPropertyFormGUI $form
+     * @throws Exception
      */
     protected function editQuestion(ilPropertyFormGUI $form = null)
     {
         $this->getQuestionTemplate();
+
+        $jupyter_notebook_json = $this->object->getJupyterExercise();
+        $jupyter_user = $this->object->getJupyterUser();
+        $jupyter_token = $this->object->getJupyterToken();
+
+
+        // Cases: (1) Initialization (2) jupyter_user from DB
+        // Question to be created
+        // TODO: Obtain a default Jupyter notebook
+        if ($jupyter_user && ilJupyterSession::isSessionSet($jupyter_user)) {
+            // A jupyter session was set before and is still active. Thus, use the existing jupyter-notebook from jupyterhub.
+            // TODO: Use existing jupyter-notebook from jupyterhub session OR push the notebook read from ILIAS DB.
+            // TODO: consider expiration
+            // TODO: If the jupyter-notebook is not available on jupyterhub, push from local database
+            $jupyter_session = new ilJupyterSession($jupyter_user);
+            $jupyter_user_credentials = $jupyter_session->getUserCredentials();
+
+        } else if ($jupyter_user && !ilJupyterSession::isSessionSet($jupyter_user)) {
+            // A jupyter session was set before and is no longer active.
+
+            // Create session from local (ILIAS DB saved) credentials and pull the jupyter-notebook from jupyterhub.
+            $jupyter_session = ilJupyterSession::fromCredentials(array('user' => $jupyter_user, 'token' => $jupyter_token));
+            $jupyter_user_credentials = $jupyter_session->getUserCredentials();
+
+
+            // TODO: Test the jupyter-notebook presence on jupyterhub!
+            // On failure:
+            // The notebook is not present on Jupyterhub. Create a new session and push the local (ILIAS DB saved) notebook.
+            // TODO: Unify with the code in 'else'.
+            // TODO: Consider '$jupyter_notebook_json = $this->rest_ctrl->getJupyterNotebook' in writeJupyterLabQuestionFromForm (?) --> push before
+
+
+        } else {
+            $jupyter_session = new ilJupyterSession();
+            $jupyter_notebook_json = '{"content":{ "cells": [ { "cell_type": "code", "execution_count": 1, "id": "ae279420", "metadata": {}, "outputs": [ { "name": "stdout", "output_type": "stream", "text": [ "hello world!\n" ] } ], "source": [ "echo \"hello world!\"" ] }, { "cell_type": "code", "execution_count": 0, "id": "c5775578", "metadata": {}, "outputs": [], "source": [] } ], "metadata": { "kernelspec": { "display_name": "Bash", "language": "bash", "name": "bash" }, "language_info": { "codemirror_mode": "shell", "file_extension": ".sh", "mimetype": "text/x-sh", "name": "bash" } }, "nbformat": 4, "nbformat_minor": 5}, "format":"json", "type":"notebook"}';
+            $jupyter_user_credentials = $jupyter_session->getUserCredentials();
+            $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
+        }
+        $this->object->setJupyterUser($jupyter_user_credentials['user']);
+        $this->object->setJupyterToken($jupyter_user_credentials['token']);
+
 
         if (!$form instanceof ilPropertyFormGUI) {
             $form = $this->initEditQuestionForm();
@@ -299,17 +309,14 @@ class assJupyterGUI extends assQuestionGUI
         $this->tpl->setVariable("QUESTION_DATA", $form->getHTML());
     }
 
-    /**
-     * Save question
-     */
     public function save(): void
     {
-        $this->getJupyterQuestion()->deleteSubParticipant();
-        $this->getJupyterQuestion()->deleteExercise();
+        //TODO: $this->getJupyterQuestion()->deleteServerSideJupyterNotebook();
 
         $form = $this->initEditQuestionForm();
         if ($form->checkInput()) {
             $this->writeJupyterLabQuestionFromForm($form);
+
             parent::save();
         } else {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
@@ -323,8 +330,8 @@ class assJupyterGUI extends assQuestionGUI
      */
     public function saveReturn(): void
     {
-        $this->getJupyterQuestion()->deleteSubParticipant();
-        $this->getJupyterQuestion()->deleteExercise();
+        //TODO: $this->getJupyterQuestion()->deleteServerSideJupyterNotebook();
+        $this->getJupyterQuestion()->deleteServerSideJupyterNotebook();
 
         $form = $this->initEditQuestionForm();
         if ($form->checkInput()) {
@@ -348,10 +355,19 @@ class assJupyterGUI extends assQuestionGUI
         $vibLabQuestion->setAuthor($form->getInput('author'));
         $vibLabQuestion->setQuestion($form->getInput('question'));
         $vibLabQuestion->setPoints($form->getInput('points'));
-        $vibLabQuestion->setJupyterExercise($form->getInput('jupyterexercise'));
 
         $evaluation = ilJupyterUtil::extractJsonFromCustomZip($form->getInput('jupyterevaluation'));
         $vibLabQuestion->setJupyterEvaluation($evaluation);
+
+        $jupyter_session_id = $form->getInput('jupyter_session_id');
+        $vibLabQuestion->setJupyterUser($form->getInput('jupyter_session_id'));
+
+        $jupyter_session = new ilJupyterSession($jupyter_session_id);
+        $user_credentials = $jupyter_session->getUserCredentials();
+        $vibLabQuestion->setJupyterToken($user_credentials['token']);
+
+        $jupyter_notebook_json = $this->rest_ctrl->getJupyterNotebook($user_credentials['user'], $user_credentials['token']);
+        $vibLabQuestion->setJupyterExercise($jupyter_notebook_json);
 
         $vibLabQuestion->setJupyterResultStorage($form->getInput('result_storing'));
         $vibLabQuestion->setJupyterAutoScoring($form->getInput('auto_scoring'));
@@ -365,14 +381,9 @@ class assJupyterGUI extends assQuestionGUI
         );
 
         $vibLabQuestion->setJupyterLang($form->getInput('language'));
-        return TRUE;
+        return true;
     }
 
-    /**
-     * Write post
-     * @param boolean $always
-     * @return int
-     */
     public function writePostData($always = false): int
     {
         return 0;
@@ -380,14 +391,15 @@ class assJupyterGUI extends assQuestionGUI
 
     public function getPreview($a_show_question_only = FALSE, $showInlineFeedback = FALSE)
     {
-//		global $DIC;
-//		$tpl = $DIC->ui()->mainTemplate();
-//      $tpl->addJavaScript($this->getPlugin()->getDirectory().'/js/question_init.js');
+		global $DIC;
+		$tpl = $DIC->ui()->mainTemplate();
+        $tpl->addJavaScript($this->getPlugin()->getDirectory() . '/js/question_init.js');
+//        $jupyter_metadata = $this->rest_ctrl->initJupyterNotebook();
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
-//      $template->setVariable('EDITOR_START', $this->getPlugin()->txt('editor_start'));
         $template->setVariable('JUPYTER_TEST', 'test');
+//        $template->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $jupyter_metadata['user'] . '/notebooks/test.ipynb?token=' . $jupyter_metadata['token']);
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
         return $preview;
@@ -398,9 +410,11 @@ class assJupyterGUI extends assQuestionGUI
 //		$settings = ilJupyterSettings::getInstance();
 //		ilLoggerFactory::getLogger('jupyter')->debug('JupyterCookie: '. $this->getJupyterQuestion()->getJupyterCookie());
 //		$atpl->setVariable('VIP_STORED_EXERCISE', $this->getJupyterQuestion()->getJupyterExerciseId());
+        $jupyter_metadata = $this->rest_ctrl->initJupyterNotebook();
 
         $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
         $atpl->setVariable('JUPYTER_TEST', 'test');
+        $atpl->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $jupyter_metadata['user'] . '/notebooks/test.ipynb?token=' . $jupyter_metadata['token']);
         $pageoutput = $this->outQuestionPage("", $is_question_postponed, $active_id, $atpl->get());
         return $pageoutput;
     }

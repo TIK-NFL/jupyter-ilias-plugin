@@ -33,15 +33,16 @@ include_once "./Modules/Test/classes/inc.AssessmentConstants.php";
 class assJupyter extends assQuestion
 {
 	const ADDITIONAL_TBL_NAME = 'il_qpl_qst_jupyter';
-	private $jupyter_sub_id = 0;
-	private $jupyter_cookie = '';
-	private $jupyter_lang = '';
-	private $jupyter_exercise = '';
-	private $jupyter_evaluation = '';
-	private $jupyter_exercise_id = 0;
-	private $jupyter_auto_scoring = true;
-	private $jupyter_result_storage = '';
-	private $plugin;
+    private $jupyter_user_id = 0;
+    private $jupyter_user = '';
+    private $jupyter_token = '';
+    private $jupyter_lang = '';
+    private $jupyter_exercise = '';
+    private $jupyter_evaluation = '';
+    private $jupyter_exercise_id = 0;
+    private $jupyter_auto_scoring = true;
+    private $jupyter_result_storage = '';
+    private $plugin;
 
 	/**
 	* jupyter lab question 
@@ -78,38 +79,29 @@ class assJupyter extends assQuestion
 	
 	public function setJupyterSubId($a_id)
 	{
-		$this->jupyter_sub_id = $a_id;
+		$this->jupyter_user_id = $a_id;
 	}
 	
 	public function getJupyterSubId()
 	{
-		return $this->jupyter_sub_id;
+		return $this->jupyter_user_id;
 	}
 	
-	public function setJupyterCookie($a_cookie)
+	public function setJupyterToken($jupyter_token)
 	{
-		$this->jupyter_cookie = $a_cookie;
+		$this->jupyter_token = $jupyter_token;
 	}
 	
-	public function getJupyterCookie()
+	public function getJupyterToken()
 	{
-		return $this->jupyter_cookie;
+		return $this->jupyter_token;
 	}
 	
-	/**
-	 * 
-	 * @param string $a_lang
-	 */
 	public function setJupyterLang($a_lang)
 	{
 		$this->jupyter_lang = $a_lang;
 	}
 	
-	/**
-	 * Get jupyter lang
-	 * @param bool $a_shortened
-	 * @return string
-	 */
 	public function getJupyterLang($a_shortened = false)
 	{
 		if($a_shortened && stristr($this->jupyter_lang, '_P'))
@@ -169,6 +161,20 @@ class assJupyter extends assQuestion
 		return $this->jupyter_auto_scoring;
 	}
 
+    public function getJupyterUser(): string
+    {
+        return $this->jupyter_user;
+    }
+
+    public function setJupyterUser(string $jupyter_user): void
+    {
+        $this->jupyter_user = $jupyter_user;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------
+
 	/**
 	 * Returns true, if a single choice question is complete for use
 	 *
@@ -177,14 +183,7 @@ class assJupyter extends assQuestion
 	 */
 	function isComplete(): bool
 	{
-		if (($this->title) and ($this->author) and ($this->question) and ($this->getMaximumPoints() > 0))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+        return (($this->title) and ($this->author) and ($this->question) and ($this->getMaximumPoints() > 0));
 	}
 
 
@@ -204,8 +203,8 @@ class assJupyter extends assQuestion
 				$this->getAdditionalTableName(),
 				array(
 					'question_fi'	=> array('integer',(int) $this->getId()),
-					'jupyter_sub_id'	=> array('integer',(int) $this->getJupyterSubId()),
-					'jupyter_cookie'	=> array('text',(string) $this->getJupyterCookie()),
+					'jupyter_user'	=> array('text', (string) $this->getJupyterUser()),
+					'jupyter_token'	=> array('text', (string) $this->getJupyterToken()),
 					'jupyter_exercise'	=> array('clob',(string) $this->getJupyterExercise()),
 					'jupyter_lang'		=> array('text', (string) $this->getJupyterLang()),
 					'jupyter_exercise_id'	=> array('integer',(string) $this->getJupyterExerciseId()),
@@ -253,9 +252,9 @@ class assJupyter extends assQuestion
 			if ($result->numRows() == 1)
 			{
 				$data = $ilDB->fetchAssoc($result);
-				
-				$this->setJupyterSubId((int) $data['jupyter_sub_id']);
-				$this->setJupyterCookie((string) $data['jupyter_cookie']);
+				$this->setJupyterSubId((int) $data['jupyter_user']);
+                $this->setJupyterUser((string) $data['jupyter_user']);
+                $this->setJupyterToken((string) $data['jupyter_token']);
 				$this->setJupyterExercise((string) $data['jupyter_exercise']);
 				$this->setJupyterLang((string) $data['jupyter_lang']);
 				$this->setJupyterExerciseId((int) $data['jupyter_exercise_id']);
@@ -266,6 +265,16 @@ class assJupyter extends assQuestion
 		}
 		parent::loadFromDb($question_id);
 	}
+
+    function queryGetJupyterUserToken($question_id): ?string {
+        global $ilDB;
+        $result = $ilDB->queryF(
+            "SELECT * FROM " . $this->getAdditionalTableName() . " WHERE question_fi = %s",
+            array('integer'),
+            array($question_id)
+        );
+        return  $ilDB->fetchAssoc($result)['jupyter_token'] ?: $result->numRows() == 1;
+    }
 
 	/**
 	 * Duplicates a jupyter question
@@ -689,151 +698,17 @@ class assJupyter extends assQuestion
 		return array();  // instant feedback preview is not supported by Jupyter
 	}
 
-	/**
-	 * Delete exercise
-	 * @param type $a_sent_id
-	 */
-	public function deleteExercise($a_sent_id = 0)
+	public function deleteServerSideJupyterNotebook($a_sent_id = 0)
 	{
 		$exc_id = $a_sent_id ? $a_sent_id : $this->getJupyterExerciseId();
-		
-		if($exc_id)
-		{
-			ilLoggerFactory::getLogger('jupyter')->debug('Deleting exercise');
-			try
-			{
-				$connector = new ilECSExerciseConnector(
-					ilJupyterSettings::getInstance()->getECSServer()
-				);
-				$connector->deleteExercise($exc_id);
-				
-				// reset exercise
-				if(!$a_sent_id)
-				{
-					$this->setJupyterExerciseId(0);
-				}
-			}
-			catch(ilECSConnectorException $e)
-			{
-				ilLoggerFactory::getLogger('jupyter')->error('Deleting exercise failed with message: '. $e->getMessage());
-			}
+		if ($exc_id) {
+            return;
 		}
 	}
-	
-	/**
-	 * Delete subparticipant
-	 */
-	public function deleteSubParticipant($a_sub_id = 0)
-	{
-		$sub_id = $a_sub_id ? $a_sub_id : $this->getJupyterSubId();
-		
-		if($sub_id)
-		{
-			ilLoggerFactory::getLogger('jupyter')->debug('Deleting subparticipant');
-			try
-			{
-				$connector = new ilECSSubParticipantConnector(
-					ilJupyterSettings::getInstance()->getECSServer()
-				);
-				$connector->deleteSubParticipant($sub_id);
-				
-				// reset sub id
-				if($a_sub_id)
-				{
-					$this->setJupyterSubId(0);
-				}
-			}
-			catch(ilECSConnectorException $e)
-			{
-				ilLoggerFactory::getLogger('jupyter')->error('Deleting subparticipant failed with message: ' . $e->getMessage());
-			}
-		}
-	}
-	
-	/**
-	 * Create a new solution
-	 * @return int
-	 */
-	public function createEvaluation($a_decode = true, $a_computational_backend = true)
-	{
-		if($a_decode and strlen($this->getJupyterEvaluation()))
-		{
-			$eva = ilJupyterUtil::extractJsonFromCustomZip($this->getJupyterEvaluation());
-		}
-		else
-		{
-			$eva = $this->getJupyterEvaluation();
-		}
-		try 
-		{
-			$scon = new ilECSEvaluationConnector(
-				ilJupyterSettings::getInstance()->getECSServer()
-			);
-			
-			if($a_computational_backend)
-			{
-				// mantis: #15974
-				$targets = $this->getJupyterSubId();
-				/**
-				$targets = array(
-					ilJupyterSettings::getInstance()->getLanguageMid($this->getJupyterLang()),
-					$this->getJupyterSubId()
-				);
-				 */
-			}
-			else
-			{
-				$targets = ilJupyterSettings::getInstance()->getEvaluationMid();
-			}
-			
-			$new_id = $scon->addEvaluation($eva,$targets);
-			ilLoggerFactory::getLogger('jupyter')->debug('Received new evaluation id ' . $new_id);
-			return $new_id;
-		}
-		catch (ilECSConnectorException $exception)
-		{
-			ilLoggerFactory::getLogger('jupyter')->error('Creating evaluation failed with message: '. $exception);
-		}
-	}
-	
-	/**
-	 * Create a new solution
-	 * @return int
-	 */
-	public function createResult($a_active_id, $a_pass)
-	{
-		$result_arr = $this->getSolutionValues($a_active_id, $a_pass);
-		if(isset($result_arr[1]))
-		{
-			$result_string = $result_arr[1]['value2'];
-		}
-		try 
-		{
-			$scon = new ilECSJupyterResultConnector(
-				ilJupyterSettings::getInstance()->getECSServer()
-			);
-			
-			$new_id = $scon->addResult($result_string,
-					array(
-						ilJupyterSettings::getInstance()->getLanguageMid($this->getJupyterLang()),
-						$this->getJupyterSubId()
-					)
-			);
-			ilLoggerFactory::getLogger('jupyter')->debug('Received new result id ' . $new_id);
-			return $new_id;
-		}
-		catch (ilECSConnectorException $exception)
-		{
-			ilLoggerFactory::getLogger('jupyter')->error('Creating result failed with message: '. $exception);
-		}
-	}
-	
-	/**
-	 * Create exercise
-	 */
+
 	public function createExercise($a_computational_backend = true)
 	{
-		if(strlen($this->getJupyterExercise()))
+		if (strlen($this->getJupyterExercise()))
 		{
 			$exc = $this->getJupyterExercise();
 		}
@@ -908,48 +783,6 @@ class assJupyter extends assQuestion
 		
 	}
 
-	public function addSubParticipant()
-	{
-		if(TRUE)
-		#if(!$this->getJupyterQuestion()->getJupyterSubId())
-		{
-			$sub = new ilECSSubParticipant();
-			$com = ilJupyterUtil::lookupCommunityByMid(
-				ilJupyterSettings::getInstance()->getECSServer(),
-				ilJupyterSettings::getInstance()->getLanguageMid($this->getJupyterLang())
-			);
-			if($com instanceof ilECSCommunity)
-			{
-				ilLoggerFactory::getLogger('jupyter')->debug('Current community = ' . $com->getId());
-				$sub->addCommunity($com->getId());
-			}
-			else
-			{
-				$this->tpl->setOnScreenMessage('failure', 'Cannot assign subparticipant.');
-				return false;
-			}
-			
-			try 
-			{
-				$connector = new ilECSSubParticipantConnector(
-					ilJupyterSettings::getInstance()->getECSServer()
-				);
-				$res = $connector->addSubParticipant($sub);
-			}
-			catch(ilECSConnectorException $e)
-			{
-				ilLoggerFactory::getLogger('jupyter')->error('Failed with message: '. $e->getMessage());
-				exit;
-			}
-			
-			
-			// save cookie and sub_id
-			$this->setJupyterSubId($res->getMid());
-			$this->setJupyterCookie($res->getCookie());
-			ilLoggerFactory::getLogger('jupyter')->debug('Recieved new cookie '. $res->getCookie());
-			ilLoggerFactory::getLogger('jupyter')->debug('Recieved new  mid '. $res->getMid());
-		}		
-	}
 	
 	/**
 	 * Lookup if an authorized or intermediate solution exists

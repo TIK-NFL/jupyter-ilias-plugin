@@ -5,6 +5,24 @@ require_once ('./Services/Form/classes/class.ilSubEnabledFormPropertyGUI.php');
 class ilJupyterEditorFormGUI extends ilFormPropertyGUI
 {
 	protected $show_editor = false;
+
+    private $jupyter_user_credentials = array();
+
+    /**
+     * @return array
+     */
+    public function getJupyterUserCredentials(): array
+    {
+        return $this->jupyter_user_credentials;
+    }
+
+    /**
+     * @param array $jupyter_user_credentials
+     */
+    public function setJupyterUserCredentials(array $jupyter_user_credentials): void
+    {
+        $this->jupyter_user_credentials = $jupyter_user_credentials;
+    }
 	
 	protected $jupyterQuestion;
 
@@ -28,8 +46,13 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
 	{
 		$settings = ilJupyterSettings::getInstance();
 		$applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_frame.html', TRUE, TRUE);
-//        $applet->setVariable('JUPYTER_TEST', $this->getJupyterQuestion()->getJupyterExerciseId());
         $applet->setVariable('JUPYTER_TEST', 'test');
+        $applet->setVariable(
+            'IFRAME_SRC',
+            'https://127.0.0.11/jupyter/user/' . $this->jupyter_user_credentials['user'] .
+            '/notebooks/test.ipynb?token=' . $this->jupyter_user_credentials['token']
+        );
+
 		return $applet->get();
 	}
 
