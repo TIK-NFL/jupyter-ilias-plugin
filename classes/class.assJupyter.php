@@ -281,6 +281,15 @@ class assJupyter extends assQuestion
         return  $ilDB->fetchAssoc($result)['jupyter_token'] ?: $result->numRows() == 1;
     }
 
+    function updateJupyterUserToken($question_id, $jupyter_user, $jupyter_token) {
+        global $ilDB;
+        $ilDB->manipulateF(
+            "UPDATE " . $this->getAdditionalTableName() . " SET jupyter_user = %s, jupyter_token = %s WHERE question_fi = %s",
+            array('string', 'string', 'integer'),
+            array($jupyter_user, $jupyter_token, $question_id)
+        );
+    }
+
 	/**
 	 * Duplicates a jupyter question
 	 *
@@ -585,12 +594,12 @@ class assJupyter extends assQuestion
                 $jupyter_notebook_json = $this->getJupyterExercise();
                 $jupyter_user_credentials = $jupyter_session->getUserCredentials();
                 $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
-                // Jupyter user and user token remains the same in ILIAS DB. TODO: Update!
+                // Jupyter user and user token remains the same in ILIAS DB. TODO: Update! (202307051431)
+                // $this->saveQuestionDataToDb($this->getId());
             }
 
             // TODO: Test the jupyter-notebook presence on jupyterhub!
             // On failure: The notebook is not present on Jupyterhub. Create a new session and push the local (ILIAS DB saved) notebook.
-            // TODO: Unify with the code in 'else'.
             // TODO: Consider '$jupyter_notebook_json = $this->rest_ctrl->getJupyterNotebook' in writeJupyterLabQuestionFromForm (?) --> push before
             // TODO: Jupyter-Notebook version comparison. Mismatch when saved on jupyterhub (via browser) but not in ILIAS...
             // TODO: .... or start a new session for every jupyterhub call
@@ -603,6 +612,9 @@ class assJupyter extends assQuestion
         }
         $this->setJupyterUser($jupyter_user_credentials['user']);
         $this->setJupyterToken($jupyter_user_credentials['token']);
+
+        // (202307051431)
+        $this->updateJupyterUserToken($this->getId(), $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
     }
 	
 
