@@ -63,7 +63,7 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
 		$a_tpl->setCurrentBlock("prop_custom");
 		$a_tpl->setVariable("CUSTOM_CONTENT", $this->getHtml());
 		$a_tpl->parseCurrentBlock();
-		$tpl->addJavaScript($this->jupyterQuestion->getPlugin()->getDirectory() . '/js/editor_init.js');
+		$tpl->addJavaScript($this->jupyterQuestion->getPlugin()->getDirectory() . '/js/jupyter_init.js');
 		$tpl->addOnLoadCode("ilJupyterInitEditor();");
 	}
 
