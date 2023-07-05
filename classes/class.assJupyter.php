@@ -588,7 +588,7 @@ class assJupyter extends assQuestion
                 $this->setJupyterExercise($jupyter_notebook_json);
 
             } catch (ilCurlErrorCodeException $exception) {
-                // TODO: Refine exception handling. For now, assume that the jupyter notebook has been cleaned up on jupyterhub.
+                // TODO: Refine exception handling. For now, assume that the jupyter notebook has been cleaned up on jupyterhub (not during an ILIAS session).
                 // If the jupyter-notebook is not available on jupyterhub, push from local database.
                 $jupyter_session = new ilJupyterSession();
                 $jupyter_notebook_json = $this->getJupyterExercise();

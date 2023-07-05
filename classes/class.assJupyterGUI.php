@@ -326,6 +326,8 @@ class assJupyterGUI extends assQuestionGUI
         $user_credentials = $jupyter_session->getUserCredentials();
         $vibLabQuestion->setJupyterToken($user_credentials['token']);
 
+        // TODO: Consider (probably unnecessarily) the case when the notebook is deleted on jupyterhub while editing. => Produces ilCurlErrorCodeException (404).
+        // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
         $vibLabQuestion->setJupyterExercise($jupyter_notebook_json);
 
