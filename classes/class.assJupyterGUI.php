@@ -2,8 +2,6 @@
 
 /* Copyright (c) 1998-2009 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-use exceptions\ilCurlErrorCodeException;
-
 include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
 
 /**
@@ -262,54 +260,7 @@ class assJupyterGUI extends assQuestionGUI
     protected function editQuestion(ilPropertyFormGUI $form = null)
     {
         $this->getQuestionTemplate();
-
-        $jupyter_user = $this->object->getJupyterUser();
-        $jupyter_token = $this->object->getJupyterToken();
-
-
-        if ($jupyter_user && ilJupyterSession::isSessionSet($jupyter_user)) {
-            // A jupyter session was set before and is still active. Thus, use the existing jupyter-notebook from jupyterhub.
-
-            // TODO: Use existing jupyter-notebook from jupyterhub session OR push the notebook read from ILIAS DB.
-            // TODO: consider expiration
-            $jupyter_session = new ilJupyterSession($jupyter_user);
-            $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-
-        } else if ($jupyter_user && !ilJupyterSession::isSessionSet($jupyter_user)) {
-            // A jupyter session was set before and is no longer active.
-
-            try {
-                // Create session from local (ILIAS DB saved) credentials and pull the jupyter-notebook from jupyterhub.
-                $jupyter_session = ilJupyterSession::fromCredentials(array('user' => $jupyter_user, 'token' => $jupyter_token));
-                $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-                $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
-                $this->object->setJupyterExercise($jupyter_notebook_json);
-
-            } catch (ilCurlErrorCodeException $exception) {
-                // TODO: Refine exception handling. For now, assume that the jupyter notebook has been cleaned up on jupyterhub.
-                // If the jupyter-notebook is not available on jupyterhub, push from local database.
-                $jupyter_session = new ilJupyterSession();
-                $jupyter_notebook_json = $this->object->getJupyterExercise();
-                $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-                $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
-            }
-
-            // TODO: Test the jupyter-notebook presence on jupyterhub!
-            // On failure: The notebook is not present on Jupyterhub. Create a new session and push the local (ILIAS DB saved) notebook.
-            // TODO: Unify with the code in 'else'.
-            // TODO: Consider '$jupyter_notebook_json = $this->rest_ctrl->getJupyterNotebook' in writeJupyterLabQuestionFromForm (?) --> push before
-            // TODO: Jupyter-Notebook version comparison. Mismatch when saved on jupyterhub (via browser) but not in ILIAS...
-            // TODO: .... or start a new session for every jupyterhub call
-        } else {
-            $jupyter_session = new ilJupyterSession();
-            // TODO: Obtain a default Jupyter notebook.
-            $jupyter_notebook_json = '{"content":{ "cells": [ { "cell_type": "code", "execution_count": 1, "id": "ae279420", "metadata": {}, "outputs": [ { "name": "stdout", "output_type": "stream", "text": [ "hello world!\n" ] } ], "source": [ "echo \"hello world!\"" ] }, { "cell_type": "code", "execution_count": 0, "id": "c5775578", "metadata": {}, "outputs": [], "source": [] } ], "metadata": { "kernelspec": { "display_name": "Bash", "language": "bash", "name": "bash" }, "language_info": { "codemirror_mode": "shell", "file_extension": ".sh", "mimetype": "text/x-sh", "name": "bash" } }, "nbformat": 4, "nbformat_minor": 5}, "format":"json", "type":"notebook"}';
-            $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-            $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
-        }
-        $this->object->setJupyterUser($jupyter_user_credentials['user']);
-        $this->object->setJupyterToken($jupyter_user_credentials['token']);
-
+        $this->object->synchronizeJupyterSession();
 
         if (!$form instanceof ilPropertyFormGUI) {
             $form = $this->initEditQuestionForm();
