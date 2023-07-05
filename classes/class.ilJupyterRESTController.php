@@ -1,5 +1,8 @@
 <?php
 
+
+use exceptions\ilCurlErrorCodeException;
+
 class ilJupyterRESTController
 {
     private $curl = null;
@@ -19,8 +22,9 @@ class ilJupyterRESTController
 
     /**
      * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
      */
-    public function execCurlRequest($url, $http_method, $auth_token, $payload='') {
+    public function execCurlRequest($url, $http_method, $auth_token, $payload='', $exceptionOnErrorCode=false) {
         try {
             $this->curl = new ilCurlConnection($url);
             $this->initCurlRequest();
@@ -29,6 +33,9 @@ class ilJupyterRESTController
                 $this->curl->setOpt(CURLOPT_POST, true);
             } else if ($http_method == 'PUT') {
                 $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
+            } else if ($http_method == 'HEAD') {
+                $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
+                $this->curl->setOpt(CURLOPT_NOBODY, true);
             }
 
             $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: token ' . $auth_token));
@@ -38,7 +45,15 @@ class ilJupyterRESTController
             }
 
             $ret = $this->curl->exec();
-            $response_code = $this->curl->getInfo(CURLINFO_HTTP_CODE);
+
+            $response_code = (int)$this->curl->getInfo(CURLINFO_HTTP_CODE);
+            if ($exceptionOnErrorCode && $response_code > 300) {
+                throw new ilCurlErrorCodeException(
+                    "HTTP server responded with an error code " . $response_code . " (exception enabled).",
+                    $response_code
+                );
+            }
+
             ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
             return $ret;
         } catch (ilCurlConnectionException $exception) {
@@ -75,23 +90,12 @@ class ilJupyterRESTController
         return array('user' => $tmp_user, 'token' => $tmp_user_token);
     }
 
-    public function pullJupyterNotebook() {
-        $tmp_user = $_SESSION['jupyter_user'];
-        $tmp_user_token = $_SESSION['jupyter_user_token'];
-
-        if ($tmp_user && $tmp_user_token) {
-            $response = $this->execCurlRequest("https://jupyterhub-1:8000/jupyter/user/" . $tmp_user . "/api/contents/test.ipynb", 'GET', $tmp_user_token);
-            $response_json = json_decode($response, false, 512, JSON_THROW_ON_ERROR);
-//            $this->tpl->setOnScreenMessage("info", $response);
-            return $response;
-        } else {
-            ilLoggerFactory::getLogger('jupyter')->error('Jupyter notebook not found.');
-        }
-        return null;
-    }
-
-    public function getJupyterNotebook($user, $user_token) {
-        $response = $this->execCurlRequest("https://jupyterhub-1:8000/jupyter/user/" . $user . "/api/contents/test.ipynb", 'GET', $user_token);
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     */
+    public function pullJupyterNotebook($user, $user_token) {
+        $response = $this->execCurlRequest("https://jupyterhub-1:8000/jupyter/user/" . $user . "/api/contents/test.ipynb", 'GET', $user_token, '', true);
 //        $response_json = json_decode($response, false, 512, JSON_THROW_ON_ERROR);
 //            $this->tpl->setOnScreenMessage("info", $response);
         return $response;
