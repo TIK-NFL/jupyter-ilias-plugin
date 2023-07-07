@@ -479,18 +479,21 @@ class assJupyter extends assQuestion
 	{
 		global $ilDB;
 		
-		ilLoggerFactory::getLogger('jupyter')->debug('++++ save working data');
+		ilLoggerFactory::getLogger('jupyter')->debug('Saving working data...');
 
-		if(is_null($pass))
-		{
+		if (is_null($pass)) {
 			include_once './Modules/Test/classes/class.ilObjTest.php';
 			$pass = ilObjTest::_getPass($active_id);
 		}
 		
-		// do not delete exercise and sub paritipant due to "auto saving" feature
-		#$this->deleteExercise((int) $_POST['jupyterexercise']);
-		#$this->deleteSubParticipant((int) $_POST['jupyterparticipant']);
-		
+        // Probably consider the case when the notebook is deleted on jupyterhub while editing. => Produces ilCurlErrorCodeException (404).
+        // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
+        $jupyter_session = new ilJupyterSession($_POST['jupyter_user']);
+        $user_credentials = $jupyter_session->getUserCredentials();
+        $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
+
+        //TODO: clean jupyter outputs
+
 		$ilDB->manipulateF(
 				'DELETE FROM tst_solutions '.
 				'WHERE active_fi = %s '.
@@ -500,11 +503,6 @@ class assJupyter extends assQuestion
 			array('integer', 'integer', 'integer', 'text'),
 			array($active_id, $this->getId(), $pass, "0")
 		);
-
-        $jupyter_solution = "test....";
-		
-//		$solution = ilJupyterUtil::extractJsonFromCustomZip(ilUtil::stripSlashes($_POST['jupytersolution']));
-		$solution = ilJupyterUtil::extractJsonFromCustomZip($jupyter_solution);
 
 		$next_id = $ilDB->nextId('tst_solutions');
 		$ilDB->insert(
@@ -521,15 +519,10 @@ class assJupyter extends assQuestion
 		);
 		
 		// create evaluation job 
-//		$this->createEvaluationJob($solution, $active_id, $pass);
-		
-		
-		if($this->getJupyterResultStorage() or 1)
-		{
-//			$result = ilUtil::stripSlashes($_POST['jupyterresult']);
-			$result = "result....";
+        //$this->createEvaluationJob($solution, $active_id, $pass);
 
-
+		/*if($this->getJupyterResultStorage() or 1) {
+			$result = "--no output--";
 			$next_id = $ilDB->nextId('tst_solutions');
 			$ilDB->insert(
 				"tst_solutions", 
@@ -543,25 +536,20 @@ class assJupyter extends assQuestion
 					"tstamp" => array("integer", time())
 				)
 			);
-		}
+		}*/
 
-		if(strlen($solution))
-		{
-			include_once ("./Modules/Test/classes/class.ilObjAssessmentFolder.php");
-			if (ilObjAssessmentFolder::_enabledAssessmentLogging())
-			{
+        include_once ("./Modules/Test/classes/class.ilObjAssessmentFolder.php");
+        if (strlen($solution)) {
+			if (ilObjAssessmentFolder::_enabledAssessmentLogging()) {
 				$this->logAction($this->lng->txtlng("assessment", "log_user_entered_values", ilObjAssessmentFolder::_getLogLanguage()), $active_id, $this->getId());
 			}
-		}
-		else
-		{
-			include_once ("./Modules/Test/classes/class.ilObjAssessmentFolder.php");
-			if (ilObjAssessmentFolder::_enabledAssessmentLogging())
-			{
+		} else {
+			if (ilObjAssessmentFolder::_enabledAssessmentLogging()) {
 				$this->logAction($this->lng->txtlng("assessment", "log_user_not_entered_values", ilObjAssessmentFolder::_getLogLanguage()), $active_id, $this->getId());
 			}
 		}
-		return TRUE;
+
+		return true;
 	}
 
     public function synchronizeJupyterSession() {
@@ -615,6 +603,26 @@ class assJupyter extends assQuestion
 
         // (202307051431)
         $this->updateJupyterUserToken($this->getId(), $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
+    }
+
+    public function pushLocalJupyterNotebook() {
+        $jupyter_session = new ilJupyterSession();
+        $jupyter_notebook_json = $this->getJupyterExercise();
+        $jupyter_user_credentials = $jupyter_session->getUserCredentials();
+        $this->jupyter_user = $jupyter_user_credentials['user'];
+        $this->jupyter_token = $jupyter_user_credentials['token'];
+        $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $this->jupyter_user, $this->jupyter_token);
+    }
+
+    public function pushTemporaryJupyterNotebook($jupyter_notebook_json) {
+        $jupyter_session = new ilJupyterSession();
+        $jupyter_user_credentials = $jupyter_session->getUserCredentials();
+        $this->rest_ctrl->pushJupyterNotebook(
+            $jupyter_notebook_json,
+            $jupyter_user_credentials['user'],
+            $jupyter_user_credentials['token']
+        );
+        return $jupyter_user_credentials;
     }
 	
 

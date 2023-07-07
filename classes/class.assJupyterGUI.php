@@ -319,7 +319,7 @@ class assJupyterGUI extends assQuestionGUI
         $evaluation = ilJupyterUtil::extractJsonFromCustomZip($form->getInput('jupyterevaluation'));
         $vibLabQuestion->setJupyterEvaluation($evaluation);
 
-        $jupyter_session_id = $form->getInput('jupyter_session_id');
+        $jupyter_session_id = $form->getInput('jupyter_session_id');  // TODO: use session_id/jupyter_user from DB (?)
         $vibLabQuestion->setJupyterUser($form->getInput('jupyter_session_id'));
 
         $jupyter_session = new ilJupyterSession($jupyter_session_id);
@@ -355,13 +355,13 @@ class assJupyterGUI extends assQuestionGUI
     {
 		global $DIC;
 		$tpl = $DIC->ui()->mainTemplate();
-        $tpl->addJavaScript($this->getPlugin()->getDirectory() . '/js/question_init.js');
-//        $jupyter_metadata = $this->rest_ctrl->initJupyterNotebook();
+//        $tpl->addJavaScript($this->getPlugin()->getDirectory() . '/js/question_init.js');
+//        $jupyter_user_credentials = $this->rest_ctrl->initJupyterNotebook();  // TODO: delete
+        $this->object->pushLocalJupyterNotebook();
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
-        $template->setVariable('JUPYTER_TEST', 'test');
-//        $template->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $jupyter_metadata['user'] . '/notebooks/test.ipynb?token=' . $jupyter_metadata['token']);
+        $template->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
         return $preview;
@@ -372,13 +372,24 @@ class assJupyterGUI extends assQuestionGUI
 //		$settings = ilJupyterSettings::getInstance();
 //		ilLoggerFactory::getLogger('jupyter')->debug('JupyterCookie: '. $this->getJupyterQuestion()->getJupyterCookie());
 //		$atpl->setVariable('VIP_STORED_EXERCISE', $this->getJupyterQuestion()->getJupyterExerciseId());
-        $jupyter_metadata = $this->rest_ctrl->initJupyterNotebook();
 
-        $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
-        $atpl->setVariable('JUPYTER_TEST', 'test');
-        $atpl->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $jupyter_metadata['user'] . '/notebooks/test.ipynb?token=' . $jupyter_metadata['token']);
-        $pageoutput = $this->outQuestionPage("", $is_question_postponed, $active_id, $atpl->get());
-        return $pageoutput;
+        if ($active_id) {
+            $solutions = $this->object->getTestOutputSolutions($active_id, $pass);
+            foreach ($solutions as $idx => $solution_value) {
+                $user_solution = $solution_value["value2"];
+                $this->object->setJupyterExercise($user_solution);
+            }
+        }
+
+        $this->object->pushLocalJupyterNotebook();
+        $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame_form.html');
+        $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
+        $atpl->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
+
+        global $DIC;
+        $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');;
+
+        return $this->outQuestionPage("", $is_question_postponed, $active_id, $atpl->get());
     }
 
 
@@ -407,8 +418,18 @@ class assJupyterGUI extends assQuestionGUI
                 $soltpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
         }
 
-//		$soltpl->setVariable('SOLUTION_TXT', '', TRUE);
-        $soltpl->setVariable('JUPYTER_TEST', 'test');
+        if ($active_id > 0) {
+            $solutions = $this->object->getSolutionValues($active_id, $pass);
+            foreach ($solutions as $idx => $solution_value) {
+                $user_solution = $solution_value["value2"];
+                $this->object->setJupyterExercise($user_solution);
+                // TODO reuse session to improve efficiency? Furthermore larger, outputs need to be uploaded again...
+            }
+        }
+
+        $this->object->pushLocalJupyterNotebook();
+        $soltpl->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
+
         $qst_txt = $soltpl->get();
         $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", TRUE, TRUE, "Modules/TestQuestionPool");
         $solutiontemplate->setVariable("SOLUTION_OUTPUT", $qst_txt);
