@@ -1,4 +1,14 @@
 <!-- {JUPYTER_TEST} -->
 <link rel="stylesheet" type="text/css" href="Customizing/global/plugins/Modules/TestQuestionPool/Questions/assJupyter/css/ilias_customizing.css" />
-<iframe src="{IFRAME_SRC}" style="position: relative; width: 100%; height: 85vh; border:0;"></iframe>
+<iframe onload="onJupyterFrameLoad(this.contentWindow)" src="{IFRAME_SRC}" style="position: relative; width: 100%; height: 85vh; border: 0;"></iframe>
+<script>
+    function onJupyterFrameLoad(window) {
+        window.addEventListener('beforeunload', function (event) {
+            window.Jupyter.notebook.save_notebook();
+            // Jupyter notebooks loaded in previews are disposable, thus no need to propagate unload events, which
+            // for example are causing confirmation popups for unsaved changes.
+            event.stopImmediatePropagation();
+        });
+    }
+</script>
 <noscript>Your web browser must have JavaScript enabled in order for this application to display correctly.</noscript>

@@ -614,6 +614,12 @@ class assJupyter extends assQuestion
         $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $this->jupyter_user, $this->jupyter_token);
     }
 
+    /**
+     * E.g., used for readonly sessions.
+     *
+     * @param $jupyter_notebook_json The notebook file as a JSON string
+     * @return array Jupyter user credentials
+     */
     public function pushTemporaryJupyterNotebook($jupyter_notebook_json) {
         $jupyter_session = new ilJupyterSession();
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
