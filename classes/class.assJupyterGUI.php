@@ -336,11 +336,11 @@ class assJupyterGUI extends assQuestionGUI
 
         ilLoggerFactory::getLogger('jupyter')->debug(print_r($form->getInput('jupyterexercise'), true));
 
-        $vibLabQuestion->setEstimatedWorkingTime(
-            $_POST["Estimated"]["hh"],
-            $_POST["Estimated"]["mm"],
-            $_POST["Estimated"]["ss"]
-        );
+//        $vibLabQuestion->setEstimatedWorkingTime(
+//            $_POST["Estimated"]["hh"],
+//            $_POST["Estimated"]["mm"],
+//            $_POST["Estimated"]["ss"]
+//        );
 
         $vibLabQuestion->setJupyterLang($form->getInput('language'));
         return true;
