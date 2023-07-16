@@ -55,7 +55,13 @@ class ilJupyterSession
     }
 
     public static function isSessionSet(string $session_id): bool {
-        return isset($_SESSION['jupyter_sessions'][$session_id]);
+        $rest_ctrl = new ilJupyterRESTController();
+
+        if (isset($_SESSION['jupyter_sessions'][$session_id])) {
+            $user_credentials = $_SESSION['jupyter_sessions'][$session_id];
+            return $rest_ctrl->checkJupyterUser($user_credentials['user'], $user_credentials['token']);
+        }
+        return false;
     }
 
     public static function fromCredentials(array $user_credentials) {

@@ -24,7 +24,7 @@ class ilJupyterRESTController
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException
      */
-    public function execCurlRequest($url, $http_method, $auth_token, $payload='', $exceptionOnErrorCode=false) {
+    public function execCurlRequest($url, $http_method, $auth_token, $payload='', $exceptionOnErrorCode=false, $returnHttpCode=false) {
         try {
             $this->curl = new ilCurlConnection($url);
             $this->initCurlRequest();
@@ -44,7 +44,7 @@ class ilJupyterRESTController
                 $this->curl->setOpt(CURLOPT_POSTFIELDS, $payload);
             }
 
-            $ret = $this->curl->exec();
+            $return_body = $this->curl->exec();
 
             $response_code = (int)$this->curl->getInfo(CURLINFO_HTTP_CODE);
             if ($exceptionOnErrorCode && $response_code > 300) {
@@ -53,9 +53,13 @@ class ilJupyterRESTController
                     $response_code
                 );
             }
-
             ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
-            return $ret;
+
+            if ($returnHttpCode) {
+                return $response_code;
+            }
+            return $return_body;
+
         } catch (ilCurlConnectionException $exception) {
             ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
             throw $exception;
@@ -88,6 +92,11 @@ class ilJupyterRESTController
         $_SESSION['jupyter_user_token'] = $tmp_user_token;
 
         return array('user' => $tmp_user, 'token' => $tmp_user_token);
+    }
+
+    public function checkJupyterUser($user, $user_token) {
+        $response_http_code = $this->execCurlRequest("https://jupyterhub-1:8000/jupyter/user/" . $user, 'GET', $user_token, '', false, true);
+        return $response_http_code == 200;
     }
 
     /**
