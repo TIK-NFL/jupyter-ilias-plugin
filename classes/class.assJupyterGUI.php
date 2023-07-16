@@ -361,6 +361,7 @@ class assJupyterGUI extends assQuestionGUI
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
+        $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
         $template->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
@@ -384,6 +385,8 @@ class assJupyterGUI extends assQuestionGUI
         $this->object->pushLocalJupyterNotebook();
         $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame_form.html');
         $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
+        $atpl->setVariable('QUESTION_TEXT', $this->object->getQuestion());
+
         $atpl->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
 
         global $DIC;
