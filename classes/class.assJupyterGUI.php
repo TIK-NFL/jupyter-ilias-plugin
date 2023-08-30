@@ -133,15 +133,6 @@ class assJupyterGUI extends assQuestionGUI
 
         $this->addBasicQuestionFormProperties($form);
 
-        $lang = new ilSelectInputGUI($this->getPlugin()->txt('editor_lang'), 'language');
-        $lang->setInfo($this->getPlugin()->txt('prog_lang_info'));
-        $lang->setValue($this->object->getJupyterLang());
-        $options[''] = $this->lng->txt('select_one');
-        $lang->setOptions($options);
-        $lang->setRequired(false);
-        $lang->setDisabled($this->getJupyterQuestion()->getJupyterSubId());
-        $form->addItem($lang);
-
         // points
         $points = new ilNumberInputGUI($lng->txt("points"), "points");
         $p = $this->object->getPoints();
@@ -150,20 +141,6 @@ class assJupyterGUI extends assQuestionGUI
         $points->setSize(3);
         $points->setMinValue(0.0);
         $form->addItem($points);
-
-        // results
-        $results = new ilCheckboxInputGUI($this->getPlugin()->txt('store_results'), 'result_storing');
-        $results->setInfo($this->getPlugin()->txt('store_results_info'));
-        $results->setValue(1);
-        $results->setChecked($this->getJupyterQuestion()->getJupyterResultStorage());
-        $form->addItem($results);
-
-        $scoring = new ilCheckboxInputGUI($this->getPlugin()->txt('auto_scoring'), 'auto_scoring');
-        $scoring->setInfo($this->getPlugin()->txt('auto_scoring_info'));
-        $scoring->setValue(1);
-        $scoring->setChecked($this->getJupyterQuestion()->getJupyterAutoScoring());
-        $form->addItem($scoring);
-
 
         if ($this->object->getId()) {
             $hidden = new ilHiddenInputGUI("", "ID");
@@ -336,12 +313,6 @@ class assJupyterGUI extends assQuestionGUI
 
         ilLoggerFactory::getLogger('jupyter')->debug(print_r($form->getInput('jupyterexercise'), true));
 
-//        $vibLabQuestion->setEstimatedWorkingTime(
-//            $_POST["Estimated"]["hh"],
-//            $_POST["Estimated"]["mm"],
-//            $_POST["Estimated"]["ss"]
-//        );
-
         $vibLabQuestion->setJupyterLang($form->getInput('language'));
         return true;
     }
@@ -355,8 +326,6 @@ class assJupyterGUI extends assQuestionGUI
     {
 		global $DIC;
 		$tpl = $DIC->ui()->mainTemplate();
-//        $tpl->addJavaScript($this->getPlugin()->getDirectory() . '/js/question_init.js');
-//        $jupyter_user_credentials = $this->rest_ctrl->initJupyterNotebook();  // TODO: delete
         $this->object->pushLocalJupyterNotebook();
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
