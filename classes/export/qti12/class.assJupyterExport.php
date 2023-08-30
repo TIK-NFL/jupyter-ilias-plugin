@@ -4,8 +4,8 @@
 include_once "./Modules/TestQuestionPool/classes/export/qti12/class.assQuestionExport.php";
 
 /**
-* Class for Jupyter question exports
-*/
+ * Class for Jupyter question exports
+ */
 class assJupyterExport extends assQuestionExport
 {
     /**
@@ -14,14 +14,14 @@ class assJupyterExport extends assQuestionExport
     public $object;
 
     /**
-    * Returns a QTI xml representation of the question
-    *
-    * Returns a QTI xml representation of the question and sets the internal
-    * domxml variable with the DOM XML representation of the QTI xml representation
-    *
-    * @return string The QTI xml representation of the question
-    * @access public
-    */
+     * Returns a QTI xml representation of the question
+     *
+     * Returns a QTI xml representation of the question and sets the internal
+     * domxml variable with the DOM XML representation of the QTI xml representation
+     *
+     * @return string The QTI xml representation of the question
+     * @access public
+     */
     public function toXML($a_include_header = true, $a_include_binary = true, $a_shuffle = false, $test_output = false, $force_image_references = false): string
     {
         global $DIC;
@@ -36,20 +36,16 @@ class assJupyterExport extends assQuestionExport
         $a_xml_writer->xmlHeader();
         $a_xml_writer->xmlStartTag("questestinterop");
 
-		$attrs = array(
-			"ident" => "il_" . IL_INST_ID . "_qst_" . $this->object->getId(),
-			"title" => $this->object->getTitle(),
-			"maxattempts" => $this->object->getNrOfTries()
-		);
-		$a_xml_writer->xmlStartTag("item", $attrs);
+        $attrs = array("ident" => "il_" . IL_INST_ID . "_qst_" . $this->object->getId(), "title" => $this->object->getTitle(), "maxattempts" => $this->object->getNrOfTries());
+        $a_xml_writer->xmlStartTag("item", $attrs);
 
         // -------------------------------------------------------------------------------------------------------------
         // QTI metadata
 
         $a_xml_writer->xmlElement("qticomment", null, $this->object->getComment());
-        $workingtime = $this->object->getEstimatedWorkingTime();
-        $duration = sprintf("P0Y0M0DT%dH%dM%dS", $workingtime["h"], $workingtime["m"], $workingtime["s"]);
-        $a_xml_writer->xmlElement("duration", null, $duration);
+//        $workingtime = $this->object->getEstimatedWorkingTime();
+//        $duration = sprintf("P0Y0M0DT%dH%dM%dS", $workingtime["h"], $workingtime["m"], $workingtime["s"]);
+//        $a_xml_writer->xmlElement("duration", null, $duration);
 
         $a_xml_writer->xmlStartTag("itemmetadata");
         $a_xml_writer->xmlStartTag("qtimetadata");
@@ -78,9 +74,7 @@ class assJupyterExport extends assQuestionExport
         // -------------------------------------------------------------------------------------------------------------
         // QTI Jupyter presentation
 
-        $attrs = array(
-            "label" => $this->object->getTitle()
-        );
+        $attrs = array("label" => $this->object->getTitle());
         $a_xml_writer->xmlStartTag("presentation", $attrs);
         $a_xml_writer->xmlStartTag("flow");
 
@@ -105,14 +99,8 @@ class assJupyterExport extends assQuestionExport
         // -------------------------------------------------------------------------------------------------------------
         // QTI feedback and hints
 
-        $feedback_allcorrect = $this->object->feedbackOBJ->getGenericFeedbackExportPresentation(
-            $this->object->getId(),
-            true
-        );
-        $feedback_onenotcorrect = $this->object->feedbackOBJ->getGenericFeedbackExportPresentation(
-            $this->object->getId(),
-            false
-        );
+        $feedback_allcorrect = $this->object->feedbackOBJ->getGenericFeedbackExportPresentation($this->object->getId(), true);
+        $feedback_onenotcorrect = $this->object->feedbackOBJ->getGenericFeedbackExportPresentation($this->object->getId(), false);
         if (strlen($feedback_allcorrect . $feedback_onenotcorrect)) {
             $a_xml_writer->xmlStartTag("resprocessing");
             $a_xml_writer->xmlStartTag("outcomes");
@@ -121,45 +109,31 @@ class assJupyterExport extends assQuestionExport
             $a_xml_writer->xmlEndTag("outcomes");
 
             if (strlen($feedback_allcorrect)) {
-                $attrs = array(
-                    "continue" => "Yes"
-                );
+                $attrs = array("continue" => "Yes");
                 $a_xml_writer->xmlStartTag("respcondition", $attrs);
                 // qti conditionvar
                 $a_xml_writer->xmlStartTag("conditionvar");
-                $attrs = array(
-                    "respident" => "points"
-                );
+                $attrs = array("respident" => "points");
                 $a_xml_writer->xmlElement("varequal", $attrs, $this->object->getPoints());
                 $a_xml_writer->xmlEndTag("conditionvar");
                 // qti displayfeedback
-                $attrs = array(
-                    "feedbacktype" => "Response",
-                    "linkrefid" => "response_allcorrect"
-                );
+                $attrs = array("feedbacktype" => "Response", "linkrefid" => "response_allcorrect");
                 $a_xml_writer->xmlElement("displayfeedback", $attrs);
                 $a_xml_writer->xmlEndTag("respcondition");
             }
 
             if (strlen($feedback_onenotcorrect)) {
-                $attrs = array(
-                    "continue" => "Yes"
-                );
+                $attrs = array("continue" => "Yes");
                 $a_xml_writer->xmlStartTag("respcondition", $attrs);
                 // qti conditionvar
                 $a_xml_writer->xmlStartTag("conditionvar");
                 $a_xml_writer->xmlStartTag("not");
-                $attrs = array(
-                    "respident" => "points"
-                );
+                $attrs = array("respident" => "points");
                 $a_xml_writer->xmlElement("varequal", $attrs, $this->object->getPoints());
                 $a_xml_writer->xmlEndTag("not");
                 $a_xml_writer->xmlEndTag("conditionvar");
                 // qti displayfeedback
-                $attrs = array(
-                    "feedbacktype" => "Response",
-                    "linkrefid" => "response_onenotcorrect"
-                );
+                $attrs = array("feedbacktype" => "Response", "linkrefid" => "response_onenotcorrect");
                 $a_xml_writer->xmlElement("displayfeedback", $attrs);
                 $a_xml_writer->xmlEndTag("respcondition");
             }
@@ -167,10 +141,7 @@ class assJupyterExport extends assQuestionExport
         }
 
         if (strlen($feedback_allcorrect)) {
-            $attrs = array(
-                "ident" => "response_allcorrect",
-                "view" => "All"
-            );
+            $attrs = array("ident" => "response_allcorrect", "view" => "All");
             $a_xml_writer->xmlStartTag("itemfeedback", $attrs);
             // qti flow_mat
             $a_xml_writer->xmlStartTag("flow_mat");
@@ -179,10 +150,7 @@ class assJupyterExport extends assQuestionExport
             $a_xml_writer->xmlEndTag("itemfeedback");
         }
         if (strlen($feedback_onenotcorrect)) {
-            $attrs = array(
-                "ident" => "response_onenotcorrect",
-                "view" => "All"
-            );
+            $attrs = array("ident" => "response_onenotcorrect", "view" => "All");
             $a_xml_writer->xmlStartTag("itemfeedback", $attrs);
             // qti flow_mat
             $a_xml_writer->xmlStartTag("flow_mat");

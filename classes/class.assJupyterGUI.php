@@ -48,17 +48,11 @@ class assJupyterGUI extends assQuestionGUI
         if ($_GET["q_id"]) {
             if ($ilAccess->checkAccess('write', '', $_GET["ref_id"])) {
                 // edit page
-                $ilTabs->addTarget("edit_content",
-                    $this->ctrl->getLinkTargetByClass("ilAssQuestionPageGUI", "edit"),
-                    array("edit", "insert", "exec_pg"),
-                    "", "");
+                $ilTabs->addTarget("edit_content", $this->ctrl->getLinkTargetByClass("ilAssQuestionPageGUI", "edit"), array("edit", "insert", "exec_pg"), "", "");
             }
 
             // preview page
-            $ilTabs->addTarget("preview",
-                $this->ctrl->getLinkTargetByClass("ilAssQuestionPageGUI", "preview"),
-                array("preview"),
-                "ilAssQuestionPageGUI", "");
+            $ilTabs->addTarget("preview", $this->ctrl->getLinkTargetByClass("ilAssQuestionPageGUI", "preview"), array("preview"), "ilAssQuestionPageGUI", "");
         }
 
         $force_active = false;
@@ -76,12 +70,7 @@ class assJupyterGUI extends assQuestionGUI
                 }
             }
             // edit question properties
-            $ilTabs->addTarget("edit_properties",
-                $url,
-                array("editQuestion", "save", "cancel", "addSuggestedSolution",
-                    "cancelExplorer", "linkChilds", "removeSuggestedSolution",
-                    "parseQuestion", "saveEdit", "suggestRange"),
-                $classname, "", $force_active);
+            $ilTabs->addTarget("edit_properties", $url, array("editQuestion", "save", "cancel", "addSuggestedSolution", "cancelExplorer", "linkChilds", "removeSuggestedSolution", "parseQuestion", "saveEdit", "suggestRange"), $classname, "", $force_active);
         }
 
         // add tab for question feedback within common class assQuestionGUI
@@ -92,10 +81,7 @@ class assJupyterGUI extends assQuestionGUI
 
         // Assessment of questions sub menu entry
         if ($_GET["q_id"]) {
-            $ilTabs->addTarget("statistics",
-                $this->ctrl->getLinkTargetByClass($classname, "assessment"),
-                array("assessment"),
-                $classname, "");
+            $ilTabs->addTarget("statistics", $this->ctrl->getLinkTargetByClass($classname, "assessment"), array("assessment"), $classname, "");
         }
 
         if (($_GET["calling_test"] > 0) || ($_GET["test_ref_id"] > 0)) {
@@ -275,8 +261,8 @@ class assJupyterGUI extends assQuestionGUI
 
     public function getPreview($a_show_question_only = FALSE, $showInlineFeedback = FALSE)
     {
-		global $DIC;
-		$tpl = $DIC->ui()->mainTemplate();
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
         $this->object->pushLocalJupyterNotebook();
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
@@ -310,7 +296,7 @@ class assJupyterGUI extends assQuestionGUI
         $atpl->setVariable('IFRAME_SRC', 'https://127.0.0.11/jupyter/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
 
         global $DIC;
-        $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');;
+        $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
 
         return $this->outQuestionPage("", $is_question_postponed, $active_id, $atpl->get());
     }

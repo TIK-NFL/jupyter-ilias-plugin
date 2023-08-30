@@ -14,7 +14,8 @@ class ilJupyterSession
      * @throws JsonException
      * @throws Exception
      */
-    public function __construct($session_id=null) {
+    public function __construct($session_id = null)
+    {
         $this->rest_ctrl = new ilJupyterRESTController();
 
         if (!$_SESSION['jupyter_sessions']) {
@@ -38,7 +39,8 @@ class ilJupyterSession
     }
 
 
-    public function destroy() {
+    public function destroy()
+    {
         if ($_SESSION['jupyter_sessions'][$this->session_id]) {
             unset($_SESSION['jupyter_sessions'][$this->session_id]);
         } else {
@@ -46,15 +48,18 @@ class ilJupyterSession
         }
     }
 
-    public function isRunning(): bool {
+    public function isRunning(): bool
+    {
         return isset($this->user_credentials);
     }
 
-    public function getUserCredentials(): array {
+    public function getUserCredentials(): array
+    {
         return $this->user_credentials;
     }
 
-    public static function isSessionSet(string $session_id): bool {
+    public static function isSessionSet(string $session_id): bool
+    {
         $rest_ctrl = new ilJupyterRESTController();
 
         if (isset($_SESSION['jupyter_sessions'][$session_id])) {
@@ -64,7 +69,8 @@ class ilJupyterSession
         return false;
     }
 
-    public static function fromCredentials(array $user_credentials) {
+    public static function fromCredentials(array $user_credentials)
+    {
         $session_id = $user_credentials['user'];
         if (!self::isSessionSet($session_id)) {
             $_SESSION['jupyter_sessions'][$session_id] = $user_credentials;

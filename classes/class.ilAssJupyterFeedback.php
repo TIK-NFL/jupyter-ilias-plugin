@@ -4,13 +4,7 @@
 
 include_once 'Modules/TestQuestionPool/classes/feedback/class.ilAssSingleOptionQuestionFeedback.php';
 
-/**
- * Description of class
- *
- * @author Stefan Meyer <smeyer.ilias@gmx.de>
- */
 class ilAssJupyterFeedback extends ilAssSingleOptionQuestionFeedback
 {
 
 }
-?>

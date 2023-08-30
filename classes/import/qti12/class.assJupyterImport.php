@@ -4,8 +4,8 @@
 include_once "./Modules/TestQuestionPool/classes/import/qti12/class.assQuestionImport.php";
 
 /**
-* Class for Jupyter question imports
-*/
+ * Class for Jupyter question imports
+ */
 class assJupyterImport extends assQuestionImport
 {
     /**
@@ -14,18 +14,18 @@ class assJupyterImport extends assQuestionImport
     public $object;
 
     /**
-    * Creates a question from a QTI file
-    *
-    * Receives parameters from a QTI parser and creates a valid ILIAS question object
-    *
-    * @param object $item The QTI item object
-    * @param integer $questionpool_id The id of the parent questionpool
-    * @param integer $tst_id The id of the parent test if the question is part of a test
-    * @param object $tst_object A reference to the parent test object
-    * @param integer $question_counter A reference to a question counter to count the questions of an imported question pool
-    * @param array $import_mapping An array containing references to included ILIAS objects
-    * @access public
-    */
+     * Creates a question from a QTI file
+     *
+     * Receives parameters from a QTI parser and creates a valid ILIAS question object
+     *
+     * @param object $item The QTI item object
+     * @param integer $questionpool_id The id of the parent questionpool
+     * @param integer $tst_id The id of the parent test if the question is part of a test
+     * @param object $tst_object A reference to the parent test object
+     * @param integer $question_counter A reference to a question counter to count the questions of an imported question pool
+     * @param array $import_mapping An array containing references to included ILIAS objects
+     * @access public
+     */
     public function fromXML(&$item, $questionpool_id, &$tst_id, &$tst_object, &$question_counter, $import_mapping): array
     {
         global $DIC;
@@ -153,7 +153,8 @@ class assJupyterImport extends assQuestionImport
                     $importfile = $this->getQplImportArchivDirectory() . '/' . $mob["uri"];
                 }
 
-                global $DIC; /* @var ILIAS\DI\Container $DIC */
+                global $DIC;
+                /* @var ILIAS\DI\Container $DIC */
                 $DIC['ilLog']->write(__METHOD__ . ': import mob from dir: ' . $importfile);
 
                 $media_object = &ilObjMediaObject::_saveTempFileAsMediaObject(basename($importfile), $importfile, false);
@@ -166,11 +167,7 @@ class assJupyterImport extends assQuestionImport
         }
         $this->object->setQuestion(ilRTE::_replaceMediaObjectImageSrc($questiontext, 1));
         foreach ($feedbacksgeneric as $correctness => $material) {
-            $this->object->feedbackOBJ->importGenericFeedback(
-                $this->object->getId(),
-                $correctness,
-                ilRTE::_replaceMediaObjectImageSrc($material, 1)
-            );
+            $this->object->feedbackOBJ->importGenericFeedback($this->object->getId(), $correctness, ilRTE::_replaceMediaObjectImageSrc($material, 1));
         }
 
         $this->object->saveToDb();

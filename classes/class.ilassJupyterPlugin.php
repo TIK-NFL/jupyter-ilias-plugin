@@ -7,89 +7,86 @@ include_once "./Modules/TestQuestionPool/classes/class.ilQuestionsPlugin.php";
 
 class ilassJupyterPlugin extends ilQuestionsPlugin
 {
-	const CNAME = 'TestQuestionPool';
-	const PNAME = 'assJupyter';
+    const CNAME = 'TestQuestionPool';
+    const PNAME = 'assJupyter';
 
     const QUESTION_TYPE = "assJupyter";
 
-	private static $instance = null;
-	
-	/**
-	 * Get singelton instance
-	 *
-	 * @global ilPluginAdmin $ilPluginAdmin
-	 * @return ilassJupyterPlugin
-	 */
-	public static function getInstance()
-	{
-		if (self::$instance)
-		{
-			return self::$instance;
-		}
-		
+    private static $instance = null;
+
+    /**
+     * Get singelton instance
+     *
+     * @return ilassJupyterPlugin
+     * @global ilPluginAdmin $ilPluginAdmin
+     */
+    public static function getInstance()
+    {
+        if (self::$instance) {
+            return self::$instance;
+        }
+
         global $DIC;
 
         $component_factory = $DIC['component.factory'];
         $instance = $component_factory->getPlugin('assjupyter');
 
         return self::$instance = $instance;
-	}
-	
-	public function getPluginName(): string
-	{
-		return self::PNAME;
-	}
-	
-	public function getQuestionType()
-	{
-		return ilassJupyterPlugin::QUESTION_TYPE;
-	}
-	
-	public function getQuestionTypeTranslation(): string
-	{
-		return $this->txt('jupyter_qst_type');
-	}
-	
-	/**
-	 * Init auto load
-	 */
-	protected function init(): void
-	{
-		$this->initAutoLoad();
-	}
-	
-	/**
-	 * Init auto loader
-	 *
-	 * @return void
-	 */
-	protected function initAutoLoad()
-	{
-		spl_autoload_register(array($this,'autoLoad'));
-	}
-	
-	/**
-	 * Auto load implementation
-	 *
-	 * @param
-	 *        	string class name
-	 */
-	private final function autoLoad($a_classname)
-	{
-		$class_file = $this->getClassesDirectory() . '/class.' . $a_classname . '.php';
-		if (@include_once ($class_file))
-		{
-			return;
-		}
-		
-		$class_file = $this->getClassesDirectory() . '/ecs/class.' . $a_classname . '.php';
-		if (@include_once ($class_file))
-		{
-			return;
-		}
-	}
+    }
 
-    protected function getClassesDirectory() : string
+    public function getPluginName(): string
+    {
+        return self::PNAME;
+    }
+
+    public function getQuestionType()
+    {
+        return ilassJupyterPlugin::QUESTION_TYPE;
+    }
+
+    public function getQuestionTypeTranslation(): string
+    {
+        return $this->txt('jupyter_qst_type');
+    }
+
+    /**
+     * Init auto load
+     */
+    protected function init(): void
+    {
+        $this->initAutoLoad();
+    }
+
+    /**
+     * Init auto loader
+     *
+     * @return void
+     */
+    protected function initAutoLoad()
+    {
+        spl_autoload_register(array($this, 'autoLoad'));
+    }
+
+    /**
+     * Auto load implementation
+     *
+     * @param
+     *            string class name
+     */
+    private final function autoLoad($a_classname)
+    {
+        $class_file = $this->getClassesDirectory() . '/class.' . $a_classname . '.php';
+        if (@include_once($class_file)) {
+            return;
+        }
+
+        $class_file = $this->getClassesDirectory() . '/ecs/class.' . $a_classname . '.php';
+        if (@include_once($class_file)) {
+            return;
+        }
+    }
+
+    protected function getClassesDirectory(): string
     {
         return $this->getDirectory() . "/classes";
     }
