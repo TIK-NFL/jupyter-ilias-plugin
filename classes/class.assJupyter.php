@@ -518,26 +518,6 @@ class assJupyter extends assQuestion
 			)
 		);
 		
-		// create evaluation job 
-        //$this->createEvaluationJob($solution, $active_id, $pass);
-
-		/*if($this->getJupyterResultStorage() or 1) {
-			$result = "--no output--";
-			$next_id = $ilDB->nextId('tst_solutions');
-			$ilDB->insert(
-				"tst_solutions", 
-				array(
-					'solution_id' => array("integer", $next_id),
-					"active_fi" => array("integer", $active_id),
-					"question_fi" => array("integer", $this->getId()),
-					"value1" => array("clob", 'jupyterresult'),
-					"value2" => array("clob", $result),
-					"pass" => array("integer", $pass),
-					"tstamp" => array("integer", time())
-				)
-			);
-		}*/
-
         include_once ("./Modules/Test/classes/class.ilObjAssessmentFolder.php");
         if (strlen($solution)) {
 			if (ilObjAssessmentFolder::_enabledAssessmentLogging()) {
@@ -787,84 +767,7 @@ class assJupyter extends assQuestion
 		}
 	}
 
-	public function createExercise($a_computational_backend = true)
-	{
-		if (strlen($this->getJupyterExercise()))
-		{
-			$exc = $this->getJupyterExercise();
-		}
-		else
-		{
-			$exc = '';
-		}
-		try
-		{
-			$econ = new ilECSExerciseConnector(
-						ilJupyterSettings::getInstance()->getECSServer()
-			);
-			
-			if($a_computational_backend)
-			{
-				$targets = array(
-					ilJupyterSettings::getInstance()->getLanguageMid($this->getJupyterLang()),
-					$this->getJupyterSubId()
-				);
-			}
-			else
-			{
-				$targets = array(
-					ilJupyterSettings::getInstance()->getEvaluationMid()
-				);
-			}
-			ilLoggerFactory::getLogger('jupyter')->debug($exc);
-			$new_id = $econ->addExercise($exc,$targets);
-			$this->setJupyterExerciseId($new_id);
-			return $new_id;
-		}
-		catch (ilECSConnectorException $exception)
-		{
-			ilLoggerFactory::getLogger('jupyter')->error('Creating exercise failed with message: '. $exception);
-		}
-	}
-	
-	public function createSolution($a_solution, $a_computational_backend = true)
-	{
-		try 
-		{
-			ilLoggerFactory::getLogger('jupyter')->info($a_solution);
-			
-			$scon = new ilECSSolutionConnector(
-				ilJupyterSettings::getInstance()->getECSServer()
-			);
-			
-			if($a_computational_backend)
-			{
-				$targets = $this->getJupyterSubId();
-				/**
-				$targets = array(
-					ilJupyterSettings::getInstance()->getLanguageMid($this->getJupyterLang()),
-					$this->getJupyterSubId()
-				);
-				 * 
-				 */
-			}
-			else
-			{
-				$targets = ilJupyterSettings::getInstance()->getEvaluationMid();
-			}
-			
-			$new_id = $scon->addSolution($a_solution,$targets);
-			ilLoggerFactory::getLogger('jupyter')->debug('Received new solution id ' . $new_id);
-			return $new_id;
-		}
-		catch (ilECSConnectorException $exception)
-		{
-			ilLoggerFactory::getLogger('jupyter')->error('Creating solution failed with message: '. $exception);
-		}
-		
-	}
 
-	
 	/**
 	 * Lookup if an authorized or intermediate solution exists
 	 * @param 	int 		$activeId

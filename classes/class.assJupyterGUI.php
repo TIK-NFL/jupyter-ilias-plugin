@@ -181,55 +181,6 @@ class assJupyterGUI extends assQuestionGUI
 
 
     /**
-     * Create a new solution on ecs for the client, using data from ilias database.
-     *
-     * @param
-     *            int active_id the id of the test
-     * @param
-     *            int pass
-     * @param
-     *            bool force solution generation even for empty solutions
-     * @return int
-     */
-    protected function createSolution($a_active_id, $a_pass = null, $a_force_empty_solution = true)
-    {
-        $sol_arr = $this->getJupyterQuestion()->getUserSolutionPreferingIntermediate($a_active_id, $a_pass);
-
-        include_once "./Modules/Test/classes/class.ilObjTest.php";
-
-        // Replaces the former static call ilObjTest::_getUsePreviousAnswers.
-        $tmpObjTest = new ilObjTest();
-
-        if ($tmpObjTest->isPreviousSolutionReuseEnabled($a_active_id) && count($sol_arr) == 0) {
-            $a_pass = $a_pass ? $a_pass - 1 : $a_pass;
-            $sol_arr = $this->getJupyterQuestion()->getSolutionValues($a_active_id, $a_pass, true);
-        }
-
-        ilLoggerFactory::getLogger('jupyter')->debug(print_r($sol_arr, true));
-
-        $sol = (string)$sol_arr[0]['value2'];
-
-        if (strlen($sol) || $a_force_empty_solution) {
-            // create the solution on ecs
-            return $this->getJupyterQuestion()->createSolution($sol);
-        }
-        return 0;
-    }
-
-
-
-
-
-    /**
-     * Create exercise
-     */
-    protected function createExercise()
-    {
-        $this->getJupyterQuestion()->createExercise();
-    }
-
-
-    /**
      * Show edit question form
      * @param ilPropertyFormGUI $form
      * @throws Exception
