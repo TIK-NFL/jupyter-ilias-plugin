@@ -594,7 +594,7 @@ class assJupyter extends assQuestion
         } else {
             $jupyter_session = new ilJupyterSession();
             // TODO: Obtain a default Jupyter notebook.
-            $jupyter_notebook_json = '{"content":{ "cells": [ { "cell_type": "code", "execution_count": 1, "id": "ae279420", "metadata": {}, "outputs": [ { "name": "stdout", "output_type": "stream", "text": [ "hello world!\n" ] } ], "source": [ "echo \"hello world!\"" ] }, { "cell_type": "code", "execution_count": 0, "id": "c5775578", "metadata": {}, "outputs": [], "source": [] } ], "metadata": { "kernelspec": { "display_name": "Bash", "language": "bash", "name": "bash" }, "language_info": { "codemirror_mode": "shell", "file_extension": ".sh", "mimetype": "text/x-sh", "name": "bash" } }, "nbformat": 4, "nbformat_minor": 5}, "format":"json", "type":"notebook"}';
+            $jupyter_notebook_json = '{"content":{ "cells": [  ], "metadata": { "kernelspec": { "display_name": "Bash", "language": "bash", "name": "bash" }, "language_info": { "codemirror_mode": "shell", "file_extension": ".sh", "mimetype": "text/x-sh", "name": "bash" } }, "nbformat": 4, "nbformat_minor": 5}, "format":"json", "type":"notebook"}';
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
             $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
         }
