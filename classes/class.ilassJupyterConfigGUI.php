@@ -73,6 +73,21 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $level->setValue($settings->getLogLevel());
         $form->addItem($level);
 
+        // Proxy URL
+        $proxy_url = new ilTextInputGUI($this->getPluginObject()->txt('proxy_url'), 'proxy_url');
+        $proxy_url->setValue($settings->getProxyUrl());
+        $form->addItem($proxy_url);
+
+        // Jupyterhub server URL
+        $jupyterhub_server_url = new ilTextInputGUI($this->getPluginObject()->txt('jupyterhub_server_url'), 'jupyterhub_server_url');
+        $jupyterhub_server_url->setValue($settings->getJupyterhubServerUrl());
+        $form->addItem($jupyterhub_server_url);
+
+        // API token
+        $api_token = new ilTextInputGUI($this->getPluginObject()->txt('api_token'), 'api_token');
+        $api_token->setValue($settings->getApiToken());
+        $form->addItem($api_token);
+
         $form->addCommandButton('save', $GLOBALS['lng']->txt('save'));
         return $form;
     }
@@ -88,6 +103,10 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
             $settings = ilJupyterSettings::getInstance();
 
             $settings->setLogLevel($form->getInput('log_level'));
+            $settings->setProxyUrl($form->getInput('proxy_url'));
+            $settings->setJupyterhubServerUrl($form->getInput('jupyterhub_server_url'));
+            $settings->setApiToken($form->getInput('api_token'));
+
             $settings->update();
 
             $this->tpl->setOnScreenMessage('success', $GLOBALS['lng']->txt('settings_saved'), true);
