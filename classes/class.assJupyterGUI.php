@@ -269,7 +269,7 @@ class assJupyterGUI extends assQuestionGUI
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
         $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
-        $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
+        $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
         return $preview;
@@ -294,7 +294,7 @@ class assJupyterGUI extends assQuestionGUI
         $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
         $atpl->setVariable('QUESTION_TEXT', $this->object->getQuestion());
 
-        $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
+        $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
 
         global $DIC;
         $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
@@ -338,7 +338,7 @@ class assJupyterGUI extends assQuestionGUI
         }
 
         $this->object->pushLocalJupyterNotebook();
-        $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/test.ipynb?token=' . $this->object->getJupyterToken());
+        $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
 
         $qst_txt = $soltpl->get();
         $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", TRUE, TRUE, "Modules/TestQuestionPool");

@@ -47,7 +47,7 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
         $settings = ilJupyterSettings::getInstance();
         $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_frame.html', TRUE, TRUE);
         $applet->setVariable('JUPYTER_TEST', 'test');
-        $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/notebooks/test.ipynb?token=' . $this->jupyter_user_credentials['token']);
+        $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/notebooks/default.ipynb?token=' . $this->jupyter_user_credentials['token']);
 
         return $applet->get();
     }
