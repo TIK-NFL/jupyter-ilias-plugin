@@ -6,5 +6,4 @@ include_once 'Modules/TestQuestionPool/classes/feedback/class.ilAssSingleOptionQ
 
 class ilAssJupyterFeedback extends ilAssSingleOptionQuestionFeedback
 {
-
 }

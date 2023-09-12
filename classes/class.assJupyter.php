@@ -39,12 +39,8 @@ class assJupyter extends assQuestion
     private $jupyter_user_id = 0;
     private $jupyter_user = '';
     private $jupyter_token = '';
-    private $jupyter_lang = '';
     private $jupyter_exercise = '';
-    private $jupyter_evaluation = '';
     private $jupyter_exercise_id = 0;
-    private $jupyter_auto_scoring = true;
-    private $jupyter_result_storage = '';
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
 
@@ -96,20 +92,6 @@ class assJupyter extends assQuestion
         return $this->jupyter_token;
     }
 
-    public function setJupyterLang($a_lang)
-    {
-        $this->jupyter_lang = $a_lang;
-    }
-
-    public function getJupyterLang($a_shortened = false)
-    {
-        if ($a_shortened && stristr($this->jupyter_lang, '_P')) {
-            return substr($this->jupyter_lang, 0, -2);
-        }
-
-        return $this->jupyter_lang;
-    }
-
     public function setJupyterExercise($a_exc)
     {
         $this->jupyter_exercise = $a_exc;
@@ -128,36 +110,6 @@ class assJupyter extends assQuestion
     public function getJupyterExerciseId()
     {
         return $this->jupyter_exercise_id;
-    }
-
-    public function setJupyterEvaluation($a_eval)
-    {
-        $this->jupyter_evaluation = $a_eval;
-    }
-
-    public function getJupyterEvaluation()
-    {
-        return $this->jupyter_evaluation;
-    }
-
-    public function getJupyterResultStorage()
-    {
-        return $this->jupyter_result_storage;
-    }
-
-    public function setJupyterResultStorage($a_res)
-    {
-        $this->jupyter_result_storage = $a_res;
-    }
-
-    public function setJupyterAutoScoring($a_auto_scoring)
-    {
-        $this->jupyter_auto_scoring = $a_auto_scoring;
-    }
-
-    public function getJupyterAutoScoring()
-    {
-        return $this->jupyter_auto_scoring;
     }
 
     public function getJupyterUser(): string
@@ -202,11 +154,7 @@ class assJupyter extends assQuestion
 					'jupyter_user'	=> array('text', (string) $this->getJupyterUser()),
 					'jupyter_token'	=> array('text', (string) $this->getJupyterToken()),
 					'jupyter_exercise'	=> array('clob',(string) $this->getJupyterExercise()),
-					'jupyter_lang'		=> array('text', (string) $this->getJupyterLang()),
 					'jupyter_exercise_id'	=> array('integer',(string) $this->getJupyterExerciseId()),
-					'jupyter_evaluation' => array('clob',(string) $this->getJupyterEvaluation()),
-					'jupyter_result_storage' => array('integer',(string) $this->getJupyterResultStorage()),
-					'jupyter_auto_scoring' => array('integer', (int) $this->getJupyterAutoScoring())
 				)
 		);
         parent::saveToDb($original_id);
@@ -244,11 +192,7 @@ class assJupyter extends assQuestion
                 $this->setJupyterUser((string)$data['jupyter_user']);
                 $this->setJupyterToken((string)$data['jupyter_token']);
                 $this->setJupyterExercise((string)$data['jupyter_exercise']);
-                $this->setJupyterLang((string)$data['jupyter_lang']);
                 $this->setJupyterExerciseId((int)$data['jupyter_exercise_id']);
-                $this->setJupyterEvaluation((string)$data['jupyter_evaluation']);
-                $this->setJupyterResultStorage((int)$data['jupyter_result_storage']);
-                $this->setJupyterAutoScoring((int)$data['jupyter_auto_scoring']);
             }
         }
         parent::loadFromDb($question_id);

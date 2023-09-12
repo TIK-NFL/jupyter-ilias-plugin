@@ -45,13 +45,6 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
 					'default'	=> null,
 					'notnull'	=> false
 				),
-			'jupyter_lang'	=>
-				array(
-					'type'		=> 'text',
-					'length'	=> 16,
-					'default'	=> '',
-					'notnull'	=> false
-				),
 			'jupyter_exercise'	=>
 				array(
 					'type'		=> 'clob',
@@ -64,26 +57,6 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
                     'length'	=> 4,
                     'default'	=> 0,
                     'notnull'	=> TRUE
-                ),
-            'jupyter_evaluation' =>
-                array(
-                    'type'		=> 'clob',
-                    'default'	=> '',
-                    'notnull'	=> FALSE
-                ),
-            'jupyter_result_storage' =>
-                array(
-                    'type'		=> 'integer',
-                    'length'	=> 1,
-                    'default'	=> 0,
-                    'notnull'	=> FALSE
-                ),
-            'jupyter_auto_scoring' =>
-                array(
-                    'type'		=> 'integer',
-                    'default'	=> 0,
-                    'length'	=> 1,
-                    'notnull'	=> true
                 ),
 		)
 	);

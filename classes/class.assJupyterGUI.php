@@ -140,11 +140,6 @@ class assJupyterGUI extends assQuestionGUI
         $hidden_exc->setValue($this->getJupyterQuestion()->getJupyterExercise());
         $form->addItem($hidden_exc);
 
-        // add evaluation
-        $hidden_eval = new ilHiddenInputGUI('jupyterevaluation');
-        $hidden_eval->setValue($this->getJupyterQuestion()->getJupyterEvaluation());
-        $form->addItem($hidden_eval);
-
         // add jupyter session id
         $hidden_jupyter_session = new ilHiddenInputGUI('jupyter_session_id');
         $hidden_jupyter_session->setValue($this->getJupyterQuestion()->getJupyterUser());
@@ -224,34 +219,27 @@ class assJupyterGUI extends assQuestionGUI
      */
     public function writeJupyterLabQuestionFromForm(ilPropertyFormGUI $form)
     {
-        $vibLabQuestion = $this->getJupyterQuestion();
-        $vibLabQuestion->setTitle($form->getInput('title'));
-        $vibLabQuestion->setComment($form->getInput('comment'));
-        $vibLabQuestion->setAuthor($form->getInput('author'));
-        $vibLabQuestion->setQuestion($form->getInput('question'));
-        $vibLabQuestion->setPoints($form->getInput('points'));
-
-        $evaluation = ilJupyterUtil::extractJsonFromCustomZip($form->getInput('jupyterevaluation'));
-        $vibLabQuestion->setJupyterEvaluation($evaluation);
+        $jupyterQuestion = $this->getJupyterQuestion();
+        $jupyterQuestion->setTitle($form->getInput('title'));
+        $jupyterQuestion->setComment($form->getInput('comment'));
+        $jupyterQuestion->setAuthor($form->getInput('author'));
+        $jupyterQuestion->setQuestion($form->getInput('question'));
+        $jupyterQuestion->setPoints($form->getInput('points'));
 
         $jupyter_session_id = $form->getInput('jupyter_session_id');  // TODO: use session_id/jupyter_user from DB (?)
-        $vibLabQuestion->setJupyterUser($form->getInput('jupyter_session_id'));
+        $jupyterQuestion->setJupyterUser($form->getInput('jupyter_session_id'));
 
         $jupyter_session = new ilJupyterSession($jupyter_session_id);
         $user_credentials = $jupyter_session->getUserCredentials();
-        $vibLabQuestion->setJupyterToken($user_credentials['token']);
+        $jupyterQuestion->setJupyterToken($user_credentials['token']);
 
         // TODO: Consider (probably unnecessarily) the case when the notebook is deleted on jupyterhub while editing. => Produces ilCurlErrorCodeException (404).
         // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
-        $vibLabQuestion->setJupyterExercise($jupyter_notebook_json);
-
-        $vibLabQuestion->setJupyterResultStorage($form->getInput('result_storing'));
-        $vibLabQuestion->setJupyterAutoScoring($form->getInput('auto_scoring'));
+        $jupyterQuestion->setJupyterExercise($jupyter_notebook_json);
 
         ilLoggerFactory::getLogger('jupyter')->debug(print_r($form->getInput('jupyterexercise'), true));
 
-        $vibLabQuestion->setJupyterLang($form->getInput('language'));
         return true;
     }
 
