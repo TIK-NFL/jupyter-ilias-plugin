@@ -2,6 +2,7 @@
 
 
 use exceptions\ilCurlErrorCodeException;
+use exceptions\JupyterSessionException;
 
 class ilJupyterRESTController
 {
@@ -32,7 +33,7 @@ class ilJupyterRESTController
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException
      */
-    public function execCurlRequest($url, $http_method, $auth_token, $payload = '', $exceptionOnErrorCode = false, $returnHttpCode = false)
+    public function execCurlRequest($url, $http_method, $auth_token = '', $payload = '', $exceptionOnErrorCode = false, $returnHttpCode = false)
     {
         try {
             $this->curl = new ilCurlConnection($url);
@@ -72,15 +73,51 @@ class ilJupyterRESTController
         }
     }
 
+    /**
+     * @throws ilCurlConnectionException
+     * @throws JupyterSessionException
+     * @throws ilCurlErrorCodeException
+     * @throws JsonException
+     */
     public function initJupyterUser()
     {
-        // TODO: Ensure that the user does not already exist. Otherwise, try another username.
-        $tmp_user = "u" . time();
-        $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $tmp_user, 'POST', $this->jupyter_settings->getApiToken());
-        $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $tmp_user . "/server", 'POST', $this->jupyter_settings->getApiToken());
-        $response = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $tmp_user . "/tokens", 'POST', $this->jupyter_settings->getApiToken());
-        $response_json = json_decode($response, false, 512, JSON_THROW_ON_ERROR);
-        $tmp_user_token = $response_json->token;
+        $microtime = floor(microtime(true) * 1000);
+        $random_num = str_pad(rand(1, 10**(10 - 1)), 10, '0', STR_PAD_LEFT);
+        $increment = 0;
+
+        $created = false;
+        $max_tries = 3;  // TODO: extract attribute/property
+
+        $tmp_user = "u";
+        $tmp_user_token = "";
+        $user_path = '';
+
+        while (!$created && $increment < $max_tries) {
+            $tmp_user = $tmp_user . $microtime . '.' . $random_num . '.' . $increment;
+            $user_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $tmp_user;
+            $http_response_code = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
+
+            if ($http_response_code == 404) {
+                $this->execCurlRequest($user_path, 'POST', $this->jupyter_settings->getApiToken());
+                $this->execCurlRequest($user_path . "/server", 'POST', $this->jupyter_settings->getApiToken());
+                $response = $this->execCurlRequest($user_path . "/tokens", 'POST', $this->jupyter_settings->getApiToken());
+                $response_json = json_decode($response, false, 512, JSON_THROW_ON_ERROR);
+                $tmp_user_token = $response_json->token;
+
+                $http_code_user_created = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
+                $created = ($http_code_user_created == 200);
+            } else {
+                $increment++;
+            }
+        }
+
+        if (!$created) {
+            if ($increment == $max_tries) {
+                throw new JupyterSessionException("Maximum number of user creation tries exceeded.");
+            }
+            throw new JupyterSessionException("Failed to create temporary user at '" . $user_path . "'.");
+        }
+
         return array('user' => $tmp_user, 'token' => $tmp_user_token);
     }
 
