@@ -48,33 +48,4 @@ class ilJupyterUtil
         }
         return;
     }
-
-    /**
-     * @param array $a_header HTTP headers
-     * @return int EContentId
-     * @throws ilECSConnectorException
-     *
-     * TODO: Borrowed from class.ilECSConnector.php:_fetchEContentIdFromHeader due to visibility.
-     */
-    public static function fetchEContentIdFromHeader(array $a_header): int
-    {
-        $location_parts = [];
-        foreach ($a_header as $header => $value) {
-            if (strcasecmp('Location', $header) === 0) {
-                $location_parts = explode('/', $value);
-                break;
-            }
-        }
-        if (!$location_parts) {
-            ilLoggerFactory::getLogger('jupyter')->error(__METHOD__ . ': Cannot find location headers.');
-            throw new ilECSConnectorException("Cannot find location header in response");
-        }
-        if (count($location_parts) === 1) {
-            ilLoggerFactory::getLogger('jupyter')->warning(__METHOD__ . ': Cannot find path seperator.');
-            throw new ilECSConnectorException("Location header has wrong format: " . $location_parts[0]);
-        }
-        $econtent_id = end($location_parts);
-        ilLoggerFactory::getLogger('jupyter')->info(__METHOD__ . ': Received EContentId ' . $econtent_id);
-        return (int)$econtent_id;
-    }
 }
