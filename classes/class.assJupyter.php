@@ -36,7 +36,6 @@ include_once "./Modules/Test/classes/inc.AssessmentConstants.php";
 class assJupyter extends assQuestion
 {
     const ADDITIONAL_TBL_NAME = 'il_qpl_qst_jupyter';
-    private $jupyter_user_id = 0;
     private $jupyter_user = '';
     private $jupyter_token = '';
     private $jupyter_exercise = '';
@@ -72,16 +71,6 @@ class assJupyter extends assQuestion
     public function getPlugin()
     {
         return $this->plugin;
-    }
-
-    public function setJupyterSubId($a_id)
-    {
-        $this->jupyter_user_id = $a_id;
-    }
-
-    public function getJupyterSubId()
-    {
-        return $this->jupyter_user_id;
     }
 
     public function setJupyterToken($jupyter_token)
@@ -190,7 +179,6 @@ class assJupyter extends assQuestion
 
             if ($result->numRows() == 1) {
                 $data = $ilDB->fetchAssoc($result);
-                $this->setJupyterSubId((int)$data['jupyter_user']);
                 $this->setJupyterUser((string)$data['jupyter_user']);
                 $this->setJupyterToken((string)$data['jupyter_token']);
                 $this->setJupyterExercise((string)$data['jupyter_exercise']);
