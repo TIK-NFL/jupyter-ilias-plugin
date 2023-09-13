@@ -51,18 +51,13 @@ class assJupyterImport extends assQuestionImport
                         $mattext = $mat["material"];
                         if ($mattext->getLabel() == "points") {
                             $this->object->setPoints($mattext->getContent());
-                        } else if ($mattext->getLabel() == "jupyterLang") {
-                            $this->object->setJupyterLang($mattext->getContent());
-                        } else if ($mattext->getLabel() == "jupyterAutoScoring") {
-                            $this->object->setJupyterAutoScoring($mattext->getContent());
-                        } else if ($mattext->getLabel() == "jupyterResultStorage") {
-                            $this->object->setJupyterResultStorage($mattext->getContent());
                         } else if ($mattext->getLabel() == "jupyterExercise") {
                             $jupyterExercise = base64_decode($mattext->getContent());
                             $this->object->setJupyterExercise($jupyterExercise);
-                        } else if ($mattext->getLabel() == "jupyterEvaluation") {
-                            $jupyterEvaluation = base64_decode($mattext->getContent());
-                            $this->object->setJupyterEvaluation($jupyterEvaluation);
+                        } else if ($mattext->getLabel() == "jupyterUser") {
+                            $this->object->setJupyterUser($mattext->getContent());
+                        } else if ($mattext->getLabel() == "jupyterUserToken") {
+                            $this->object->setJupyterToken($mattext->getContent());
                         }
                     }
                 }
@@ -128,7 +123,6 @@ class assJupyterImport extends assQuestionImport
         $this->object->setOwner($ilUser->getId());
         $this->object->setQuestion($this->object->QTIMaterialToString($item->getQuestiontext()));
         $this->object->setObjId($questionpool_id);
-        $this->object->setEstimatedWorkingTime($duration["h"], $duration["m"], $duration["s"]);
         $this->object->setAdditionalContentEditingMode($this->fetchAdditionalContentEditingModeInformation($item));
         $this->object->saveToDb();
 
