@@ -43,6 +43,7 @@ class assJupyter extends assQuestion
     private $jupyter_exercise_id = 0;
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
+    private ilJupyterSettings $jupyter_settings;
 
     /**
      * jupyter lab question
@@ -62,6 +63,7 @@ class assJupyter extends assQuestion
         parent::__construct($title, $comment, $author, $owner, $question);
         $this->plugin = ilassJupyterPlugin::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
+        $this->jupyter_settings = ilJupyterSettings::getInstance();
     }
 
     /**
@@ -481,10 +483,13 @@ class assJupyter extends assQuestion
 
         } else {
             $jupyter_session = new ilJupyterSession();
-            // TODO: Obtain a default Jupyter notebook.
             $jupyter_notebook_json = '{"content":{ "cells": [  ], "metadata": { "kernelspec": { "display_name": "Bash", "language": "bash", "name": "bash" }, "language_info": { "codemirror_mode": "shell", "file_extension": ".sh", "mimetype": "text/x-sh", "name": "bash" } }, "nbformat": 4, "nbformat_minor": 5}, "format":"json", "type":"notebook"}';
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-            $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
+            $this->rest_ctrl->pushJupyterNotebook(
+                $this->jupyter_settings->getDefaultJupyterNotebook(),
+                $jupyter_user_credentials['user'],
+                $jupyter_user_credentials['token']
+            );
         }
         $this->setJupyterUser($jupyter_user_credentials['user']);
         $this->setJupyterToken($jupyter_user_credentials['token']);

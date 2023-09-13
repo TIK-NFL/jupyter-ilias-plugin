@@ -88,6 +88,11 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $api_token->setValue($settings->getApiToken());
         $form->addItem($api_token);
 
+        // Default jupyter notebook
+        $default_jupyter_notebook = new ilTextAreaInputGUI($this->getPluginObject()->txt('default_jupyter_notebook'), 'default_jupyter_notebook');
+        $default_jupyter_notebook->setValue($settings->getDefaultJupyterNotebook() ?: '');
+        $form->addItem($default_jupyter_notebook);
+
         $form->addCommandButton('save', $GLOBALS['lng']->txt('save'));
         return $form;
     }
@@ -106,6 +111,7 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
             $settings->setProxyUrl($form->getInput('proxy_url'));
             $settings->setJupyterhubServerUrl($form->getInput('jupyterhub_server_url'));
             $settings->setApiToken($form->getInput('api_token'));
+            $settings->setDefaultJupyterNotebook($form->getInput('default_jupyter_notebook'));
 
             $settings->update();
 

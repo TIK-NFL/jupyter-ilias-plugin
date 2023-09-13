@@ -20,6 +20,8 @@ class ilJupyterSettings
 
     private $api_token;
 
+    private $default_jupyter_notebook;
+
 
     /**
      * Singleton constructor
@@ -102,7 +104,21 @@ class ilJupyterSettings
         $this->api_token = $api_token;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getDefaultJupyterNotebook()
+    {
+        return $this->default_jupyter_notebook;
+    }
 
+    /**
+     * @param mixed $default_jupyter_notebook
+     */
+    public function setDefaultJupyterNotebook($default_jupyter_notebook): void
+    {
+        $this->default_jupyter_notebook = $default_jupyter_notebook;
+    }
 
     /**
      * Update settings
@@ -113,6 +129,7 @@ class ilJupyterSettings
         $this->getStorage()->set('proxy_url', (string) $this->proxy_url);
         $this->getStorage()->set('jupyterhub_server_url', (string) $this->jupyterhub_server_url);
         $this->getStorage()->set('api_token', (string) $this->api_token);
+        $this->getStorage()->set('default_jupyter_notebook', (string) $this->default_jupyter_notebook);
     }
 
     /**
@@ -133,5 +150,6 @@ class ilJupyterSettings
         $this->proxy_url = $this->getStorage()->get('proxy_url', $this->proxy_url);
         $this->jupyterhub_server_url = $this->getStorage()->get('jupyterhub_server_url', $this->jupyterhub_server_url);
         $this->api_token = $this->getStorage()->get('api_token', $this->api_token);
+        $this->default_jupyter_notebook = $this->getStorage()->get('default_jupyter_notebook', $this->default_jupyter_notebook);
     }
 }

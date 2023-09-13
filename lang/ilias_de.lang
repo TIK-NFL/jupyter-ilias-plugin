@@ -4,3 +4,4 @@ form_tab_settings#:#Einstellungen zum Jupyter-Fragen Plugin
 form_tab_settings_activate#:#Fragen-Plugin aktivieren
 editor#:#Fragen-Editor
 form_tab_settings_loglevel#:#Log-Level
+default_jupyter_notebook#:#Voreingestelltes Jupyter-Notebook (JSON)

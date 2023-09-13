@@ -7,3 +7,4 @@ form_tab_settings_loglevel#:#Log-Level
 proxy_url#:#Proxy URL
 jupyterhub_server_url#:#Jupyterhub server URL
 api_token#:#API token
+default_jupyter_notebook#:#Default Jupyter Notebook (JSON)
