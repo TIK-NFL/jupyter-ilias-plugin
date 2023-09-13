@@ -214,14 +214,14 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * Duplicates a jupyter question
+     * Duplicates a jupyter question.
      *
-     * Duplicates an assMathematikOnline
-     *Disintegrate ECS and ECS settings.
-
-- Update forms
-- Remove table il_qpl_qst_jupyter_res from dbupdate.php
-- Remove ECS calls from Jupyter base classes
+     * @param $for_test
+     * @param $title
+     * @param $author
+     * @param $owner
+     * @param $a_test_obj_id
+     * @return int
      * @access public
      */
     public function duplicate($for_test = true, $title = "", $author = "", $owner = "", $a_test_obj_id = null): int
@@ -264,7 +264,7 @@ class assJupyter extends assQuestion
         // copy XHTML media objects
         $clone->copyXHTMLMediaObjectsOfQuestion($this_id);
 
-        $clone->onDuplicate($a_test_obj_id, $this_id, $clone->getObjId(), $clone->getId());
+        $clone->onDuplicate((int)$a_test_obj_id, $this_id, $clone->getObjId(), $clone->getId());
 
         return $clone->id;
     }
