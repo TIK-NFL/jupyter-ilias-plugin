@@ -440,6 +440,17 @@ class assJupyter extends assQuestion
         return true;
     }
 
+    /**
+     * Synchronizes the Jupyter (open notebooks) between the Jupyterhub and ILIAS.
+     *
+     * TODO: Consider expiration of jupyter notebooks.
+     * TODO: Refine ilCurlErrorCodeException handling. For now, assume that the jupyter notebook has been cleaned up on jupyterhub (not during an ILIAS session).
+     * TODO: Jupyter notebook version comparison. Mismatch when saved on jupyterhub (via browser) but not in ILIAS...
+     *
+     *
+     * @throws JsonException
+     * @throws ilCurlConnectionException
+     */
     public function synchronizeJupyterSession()
     {
         $jupyter_user = $this->getJupyterUser();
@@ -447,15 +458,11 @@ class assJupyter extends assQuestion
 
         if ($jupyter_user && ilJupyterSession::isSessionSet($jupyter_user)) {
             // A jupyter session was set before and is still active. Thus, use the existing jupyter-notebook from jupyterhub.
-
-            // TODO: Use existing jupyter-notebook from jupyterhub session OR push the notebook read from ILIAS DB.
-            // TODO: consider expiration
             $jupyter_session = new ilJupyterSession($jupyter_user);
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
 
         } else if ($jupyter_user && !ilJupyterSession::isSessionSet($jupyter_user)) {
             // A jupyter session was set before and is no longer active.
-
             try {
                 // Create session from local (ILIAS DB saved) credentials and pull the jupyter-notebook from jupyterhub.
                 // Jupyterhub sessions should not be shorter than ILIAS sessions.
@@ -465,21 +472,13 @@ class assJupyter extends assQuestion
                 $this->setJupyterExercise($jupyter_notebook_json);
 
             } catch (ilCurlErrorCodeException $exception) {
-                // TODO: Refine exception handling. For now, assume that the jupyter notebook has been cleaned up on jupyterhub (not during an ILIAS session).
-                // If the jupyter-notebook is not available on jupyterhub, push from local database.
+                // If the jupyter-notebook is not available on jupyterhub, push it from local database.
                 $jupyter_session = new ilJupyterSession();
                 $jupyter_notebook_json = $this->getJupyterExercise();
                 $jupyter_user_credentials = $jupyter_session->getUserCredentials();
                 $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
-                // Jupyter user and user token remains the same in ILIAS DB. TODO: Update! (202307051431)
-                // $this->saveQuestionDataToDb($this->getId());
             }
 
-            // TODO: Test the jupyter-notebook presence on jupyterhub!
-            // On failure: The notebook is not present on Jupyterhub. Create a new session and push the local (ILIAS DB saved) notebook.
-            // TODO: Consider '$jupyter_notebook_json = $this->rest_ctrl->getJupyterNotebook' in writeJupyterLabQuestionFromForm (?) --> push before
-            // TODO: Jupyter-Notebook version comparison. Mismatch when saved on jupyterhub (via browser) but not in ILIAS...
-            // TODO: .... or start a new session for every jupyterhub call
         } else {
             $jupyter_session = new ilJupyterSession();
             // TODO: Obtain a default Jupyter notebook.
@@ -490,7 +489,7 @@ class assJupyter extends assQuestion
         $this->setJupyterUser($jupyter_user_credentials['user']);
         $this->setJupyterToken($jupyter_user_credentials['token']);
 
-        // (202307051431)
+        // Update user credentials within ILIAS DB for the case, a new jupyter session has been initialized.
         $this->updateJupyterUserToken($this->getId(), $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
     }
 
