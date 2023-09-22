@@ -453,20 +453,25 @@ class assJupyter extends assQuestion
 
         } else if ($jupyter_user && !ilJupyterSession::isSessionSet($jupyter_user)) {
             // A jupyter session was set before and is no longer active.
+
             try {
                 // Create session from local (ILIAS DB saved) credentials and pull the jupyter-notebook from jupyterhub.
                 // Jupyterhub sessions should not be shorter than ILIAS sessions.
+
                 $jupyter_session = ilJupyterSession::fromCredentials(array('user' => $jupyter_user, 'token' => $jupyter_token));
                 $jupyter_user_credentials = $jupyter_session->getUserCredentials();
                 $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
                 $this->setJupyterExercise($jupyter_notebook_json);
+                ilLoggerFactory::getLogger('jupyter')->debug("Jupyter session for user '" . $jupyter_user_credentials['user'] . "' successfully established from local credentials.");
 
             } catch (ilCurlErrorCodeException $exception) {
                 // If the jupyter-notebook is not available on jupyterhub, push it from local database.
+
                 $jupyter_session = new ilJupyterSession();
                 $jupyter_notebook_json = $this->getJupyterExercise();
                 $jupyter_user_credentials = $jupyter_session->getUserCredentials();
                 $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
+                ilLoggerFactory::getLogger('jupyter')->debug("Jupyter notebook for user '" . $jupyter_user . "' not available on jupyterhub. New jupyter session created.");
             }
 
         } else {
@@ -478,6 +483,7 @@ class assJupyter extends assQuestion
                 $jupyter_user_credentials['user'],
                 $jupyter_user_credentials['token']
             );
+            ilLoggerFactory::getLogger('jupyter')->debug("New jupyter session and a default jupyter notebook created for user '" . $jupyter_user_credentials['user'] . "'.");
         }
         $this->setJupyterUser($jupyter_user_credentials['user']);
         $this->setJupyterToken($jupyter_user_credentials['token']);

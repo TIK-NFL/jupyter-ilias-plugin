@@ -83,21 +83,24 @@ class ilJupyterRESTController
     {
         $microtime = floor(microtime(true) * 1000);
         $random_num = str_pad(rand(1, 10**(10 - 1)), 10, '0', STR_PAD_LEFT);
+        $login = $GLOBALS['ilias']->account->getLogin();
         $increment = 0;
 
         $created = false;
         $max_tries = 3;  // TODO: extract attribute/property
 
-        $tmp_user = "u";
+        $tmp_user = "";
         $tmp_user_token = "";
         $user_path = '';
 
         while (!$created && $increment < $max_tries) {
-            $tmp_user = $tmp_user . $microtime . '.' . $random_num . '.' . $increment;
+            $tmp_user = "u" . $microtime . '.' . $random_num . '.' . $increment;
             $user_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $tmp_user;
             $http_response_code = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
 
             if ($http_response_code == 404) {
+                ilLoggerFactory::getLogger('jupyter')->info("Creating temporary user '" . $tmp_user ."' for ILIAS account login '" . $login . "' at '" . $user_path . "'.");
+
                 $this->execCurlRequest($user_path, 'POST', $this->jupyter_settings->getApiToken());
                 $this->execCurlRequest($user_path . "/server", 'POST', $this->jupyter_settings->getApiToken());
                 $response = $this->execCurlRequest($user_path . "/tokens", 'POST', $this->jupyter_settings->getApiToken());
@@ -106,9 +109,8 @@ class ilJupyterRESTController
 
                 $http_code_user_created = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
                 $created = ($http_code_user_created == 200);
-            } else {
-                $increment++;
             }
+            $increment++;
         }
 
         if (!$created) {
@@ -134,11 +136,15 @@ class ilJupyterRESTController
      */
     public function pullJupyterNotebook($user, $user_token)
     {
-        return $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb", 'GET', $user_token, '', true);
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
+        ilLoggerFactory::getLogger('jupyter')->debug("Pulling remote jupyter notebook from " . $jupyter_notebook_url);
+        return $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true);
     }
 
     public function pushJupyterNotebook($jupyter_notebook_json_str, $user, $user_token)
     {
-        $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb", 'PUT', $user_token, $jupyter_notebook_json_str);
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
+        ilLoggerFactory::getLogger('jupyter')->debug("Pushing local jupyter notebook '" . $jupyter_notebook_json_str . "' to " . $jupyter_notebook_url);
+        $this->execCurlRequest($jupyter_notebook_url, 'PUT', $user_token, $jupyter_notebook_json_str);
     }
 }

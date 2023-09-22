@@ -26,6 +26,7 @@ class ilJupyterSession
             if ($_SESSION['jupyter_sessions'][$session_id]) {
                 $this->user_credentials = $_SESSION['jupyter_sessions'][$session_id];
                 $this->session_id = $session_id;
+                ilLoggerFactory::getLogger('jupyter')->debug("Reusing existent jupyter session with ID '" . $session_id . "'.");
             } else {
                 $exception = new JupyterSessionNotFoundException($session_id);
                 ilLoggerFactory::getLogger('jupyter')->warning($exception->getMessage());
@@ -42,6 +43,7 @@ class ilJupyterSession
     public function destroy()
     {
         if ($_SESSION['jupyter_sessions'][$this->session_id]) {
+            ilLoggerFactory::getLogger('jupyter')->debug("Destroying jupyter session with ID '" . $this->session_id . "'.");
             unset($_SESSION['jupyter_sessions'][$this->session_id]);
         } else {
             ilLoggerFactory::getLogger('jupyter')->warning('No jupyter session to destroy.');
@@ -74,6 +76,7 @@ class ilJupyterSession
         $session_id = $user_credentials['user'];
         if (!self::isSessionSet($session_id)) {
             $_SESSION['jupyter_sessions'][$session_id] = $user_credentials;
+            ilLoggerFactory::getLogger('jupyter')->debug("Obtaining a new jupyter session from credentials for user '" . $session_id . "'.");
             return new ilJupyterSession($session_id);
         } else {
             $exception = new Exception("Could not override running Jupyter session with ID '" . $session_id . "'.");
