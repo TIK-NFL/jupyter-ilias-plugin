@@ -21,7 +21,7 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
     }
 
     /**
-     * Handles all commmands, default is "configure"
+     * Handles all commands, default is "configure"
      */
     public function performCommand($cmd): void
     {
@@ -30,6 +30,7 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $ilTabs->addTab('tab_settings', ilassJupyterPlugin::getInstance()->txt('tab_settings'), $GLOBALS['ilCtrl']->getLinkTarget($this, 'configure'));
 
         switch ($cmd) {
+            case 'test':
             case 'configure':
             case 'save':
                 $this->$cmd();
@@ -94,6 +95,8 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $form->addItem($default_jupyter_notebook);
 
         $form->addCommandButton('save', $GLOBALS['lng']->txt('save'));
+        $form->addCommandButton('test', $this->getPluginObject()->txt('test_config'));
+
         return $form;
     }
 
@@ -117,11 +120,26 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
 
             $this->tpl->setOnScreenMessage('success', $GLOBALS['lng']->txt('settings_saved'), true);
             $GLOBALS['ilCtrl']->redirect($this, 'configure');
-            return TRUE;
+            return true;
         }
 
         $this->tpl->setOnScreenMessage('failure', $GLOBALS['lng']->txt('err_check_input'), true);
         $GLOBALS['ilCtrl']->redirect($this, 'configure');
-        return TRUE;
+        return true;
     }
+
+    protected function test() {
+        $this->getPluginObject()->includeClass('class.ilJupyterSettings.php');
+        $settings = ilJupyterSettings::getInstance();
+        $assJupyter = new assJupyter();
+        try {
+            $assJupyter->pushTemporaryJupyterNotebook($settings->getDefaultJupyterNotebook());
+            $this->tpl->setOnScreenMessage('success', $this->getPluginObject()->txt('config_test_successful'), true);
+        } catch (Exception $e) {
+            $this->tpl->setOnScreenMessage('failure', $this->getPluginObject()->txt('config_test_failed') .
+                " " . $e->getMessage(), true);
+        }
+        $GLOBALS['ilCtrl']->redirect($this, 'configure');
+    }
+
 }

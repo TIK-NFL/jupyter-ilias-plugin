@@ -3,6 +3,7 @@
 
 use exceptions\ilCurlErrorCodeException;
 use exceptions\JupyterSessionException;
+use exceptions\JupyterUnreachableServerException;
 
 class ilJupyterRESTController
 {
@@ -78,6 +79,7 @@ class ilJupyterRESTController
      * @throws JupyterSessionException
      * @throws ilCurlErrorCodeException
      * @throws JsonException
+     * @throws JupyterUnreachableServerException
      */
     public function initJupyterUser()
     {
@@ -93,9 +95,16 @@ class ilJupyterRESTController
         $tmp_user_token = "";
         $user_path = '';
 
+        $root_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api";
+        $http_response_code = $this->execCurlRequest($root_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
+
+        if ($http_response_code != 200) {
+            throw new JupyterUnreachableServerException("Failed to call the jupyter REST API at " . $root_path);
+        }
+
         while (!$created && $increment < $max_tries) {
             $tmp_user = "u" . $microtime . '.' . $random_num . '.' . $increment;
-            $user_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $tmp_user;
+            $user_path = $root_path . "/users/" . $tmp_user;
             $http_response_code = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
 
             if ($http_response_code == 404) {
