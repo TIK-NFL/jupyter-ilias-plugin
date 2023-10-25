@@ -133,8 +133,13 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $settings = ilJupyterSettings::getInstance();
         $assJupyter = new assJupyter();
         try {
-            $assJupyter->pushTemporaryJupyterNotebook($settings->getDefaultJupyterNotebook());
-            $this->tpl->setOnScreenMessage('success', $this->getPluginObject()->txt('config_test_successful'), true);
+            $jupyter_user_credentials = $assJupyter->pushTemporaryJupyterNotebook($settings->getDefaultJupyterNotebook());
+            if ($assJupyter->deleteTemporaryJupyterNotebook($jupyter_user_credentials['user'])) {
+                $this->tpl->setOnScreenMessage('success', $this->getPluginObject()->txt('config_test_successful'), true);
+            } else {
+                $this->tpl->setOnScreenMessage('failure', $this->getPluginObject()->txt('config_test_failed') . " " .
+                    $this->getPluginObject()->txt('deletion_failed'), true);
+            }
         } catch (Exception $e) {
             $this->tpl->setOnScreenMessage('failure', $this->getPluginObject()->txt('config_test_failed') .
                 " " . $e->getMessage(), true);

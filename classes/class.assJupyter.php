@@ -510,6 +510,15 @@ class assJupyter extends assQuestion
     }
 
     /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     */
+    public function deleteTemporaryJupyterNotebook($jupyter_user): bool
+    {
+        return $this->rest_ctrl->deleteJupyterUser($jupyter_user, $this->jupyter_settings->getApiToken());
+    }
+
+    /**
      * E.g., used for readonly sessions.
      *
      * @param $jupyter_notebook_json The notebook file as a JSON string
@@ -521,6 +530,60 @@ class assJupyter extends assQuestion
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
         $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
         return $jupyter_user_credentials;
+    }
+
+    /**
+     * @throws ilCurlConnectionException
+     * @throws JsonException
+     * @throws ilCurlErrorCodeException
+     */
+    public function cleanUpStaleJupyterNotebooks()
+    {
+        // TODO: adjust values
+        // TODO: extract settings
+        $max_age_sec = 60;
+        $max_sync_deviation_sec = 60;
+
+        //
+        // Check the clock synchronization between localhost and jupyterhub.
+        //
+        $jupyter_user_credentials = $this->pushTemporaryJupyterNotebook($this->jupyter_settings->getDefaultJupyterNotebook());
+        $metadata = $this->rest_ctrl->pullJupyterNotebookMetaData($jupyter_user_credentials['user'], $this->jupyter_settings->getApiToken());
+        $time_current = time();
+        $time_created = $metadata['created'];
+        $this->rest_ctrl->deleteJupyterUser($jupyter_user_credentials['user'], $this->jupyter_settings->getApiToken());
+        $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user_credentials['user']);
+
+        if ($time_current > $time_created + $max_sync_deviation_sec || $time_current < $time_created - $max_sync_deviation_sec) {
+            ilLoggerFactory::getLogger('jupyter')->error("Failed to clean up stale jupyter notebooks due to asynchronous clocks between the local system and jupyterhub.");
+            return;
+        }
+
+
+        //
+        // Cleanup of temporary jupyter users only created by this ILIAS instance.
+        // Considered are only users containing a default jupyter notebook file (default.ipynb) the metadata of which match the given conditions.
+        //
+        $jupyter_session_records = $this->db_ctrl->getTemporarySessionRecords();
+        foreach ($jupyter_session_records as $record) {
+            $jupyter_user = $record['jupyter_user'];
+            $metadata = $this->rest_ctrl->pullJupyterNotebookMetaData($jupyter_user, $this->jupyter_settings->getApiToken());
+            if (!$metadata) {
+                ilLoggerFactory::getLogger('jupyter')->warning("Cleanup: Jupyter user '" . $jupyter_user . "' is present without the default jupyter notebook file. Failed to gather default notebook metadata.");
+                // Delete the session DB record nevertheless, since all future cleanup runs will attempt to delete this user.
+                // TODO: Extract ILIAS setting?
+                $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user);
+                continue;
+            }
+
+            $time_last_modified = $metadata['last_modified'];
+            $time_current = time();
+            if ($time_current > $time_last_modified + $max_age_sec + $max_sync_deviation_sec) {
+                ilLoggerFactory::getLogger('jupyter')->info("Cleanup: Deleting stale jupyter user '" . $jupyter_user . "'...");
+                $this->rest_ctrl->deleteJupyterUser($jupyter_user, $this->jupyter_settings->getApiToken());
+                $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user);
+            }
+        }
     }
 
 

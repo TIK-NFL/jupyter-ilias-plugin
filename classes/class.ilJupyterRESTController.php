@@ -44,6 +44,8 @@ class ilJupyterRESTController
                 $this->curl->setOpt(CURLOPT_POST, true);
             } else if ($http_method == 'PUT') {
                 $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
+            } else if ($http_method == 'DELETE') {
+                $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
             } else if ($http_method == 'HEAD') {
                 $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
                 $this->curl->setOpt(CURLOPT_NOBODY, true);
@@ -135,8 +137,71 @@ class ilJupyterRESTController
 
     public function checkJupyterUser($user, $user_token)
     {
-        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user, 'GET', $user_token, '', false, true);
-        return $response_http_code == 200;
+        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user, 'GET', $user_token, '', false, true, false);
+        return $response_http_code == 200 || $response_http_code == 302;
+    }
+
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     */
+    public function deleteJupyterUser($user, $user_token): bool
+    {
+        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $user, 'DELETE', $user_token, '', false, true, false);
+
+        $deleted = $response_http_code == 204;
+        if ($deleted) {
+            ilLoggerFactory::getLogger('jupyter')->info("Deleted temporary user '" . $user ."'.");
+        } else {
+            ilLoggerFactory::getLogger('jupyter')->info("Failed to clean up temporary user '" . $user ."'.");
+        }
+        return $deleted;
+    }
+
+
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     * @throws JsonException
+     */
+    public function pullJupyterNotebookMetaData($user, $user_token): array
+    {
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
+        $response = $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true, true);
+        if ($response['response_code'] == 200) {
+            $response_json = json_decode($response['response_body'], true, 512, JSON_THROW_ON_ERROR);
+            return array(
+                "created" => date('U', strtotime($response_json['created'])),
+                "last_modified" => date('U', strtotime($response_json['last_modified'])),
+            );
+        }
+        return array();
+    }
+
+    public function pullJupyterUserMetaData($user, $user_token): array
+    {
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $user;
+        $response = $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true, true);
+        $response_json = json_decode($response['response_body'], true, 512, JSON_THROW_ON_ERROR);
+        if ($response['response_code'] == 200) {
+            return array(
+                "created" => date('U', strtotime($response_json['created'])),
+                "last_activity" => date('U', strtotime($response_json['last_activity'])),
+            );
+        }
+        return array();
+    }
+
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     * @throws JsonException
+     */
+    public function pullJupyterUsers()
+    {
+        $users_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users";
+        $response = $this->execCurlRequest($users_path, 'GET', $this->jupyter_settings->getApiToken());
+        return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**

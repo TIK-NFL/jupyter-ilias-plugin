@@ -1,5 +1,6 @@
 <?php
 
+use exceptions\ilCurlErrorCodeException;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 
@@ -14,12 +15,6 @@ class ilassJupyterPlugin extends ilQuestionsPlugin
 
     private static $instance = null;
 
-    /**
-     * Get singelton instance
-     *
-     * @return ilassJupyterPlugin
-     * @global ilPluginAdmin $ilPluginAdmin
-     */
     public static function getInstance()
     {
         if (self::$instance) {
@@ -49,38 +44,19 @@ class ilassJupyterPlugin extends ilQuestionsPlugin
         return $this->txt('jupyter_qst_type');
     }
 
-    /**
-     * Init auto load
-     */
     protected function init(): void
     {
         $this->initAutoLoad();
     }
 
-    /**
-     * Init auto loader
-     *
-     * @return void
-     */
     protected function initAutoLoad()
     {
         spl_autoload_register(array($this, 'autoLoad'));
     }
 
-    /**
-     * Auto load implementation
-     *
-     * @param
-     *            string class name
-     */
     private final function autoLoad($a_classname)
     {
         $class_file = $this->getClassesDirectory() . '/class.' . $a_classname . '.php';
-        if (@include_once($class_file)) {
-            return;
-        }
-
-        $class_file = $this->getClassesDirectory() . '/ecs/class.' . $a_classname . '.php';
         if (@include_once($class_file)) {
             return;
         }
@@ -96,4 +72,8 @@ class ilassJupyterPlugin extends ilQuestionsPlugin
         include_once($this->getClassesDirectory() . "/" . $a_class_file_name);
     }
 
+    public function handleCronJob() {
+        $jupyter = new assJupyter();
+        $jupyter->cleanUpStaleJupyterNotebooks();
+    }
 }

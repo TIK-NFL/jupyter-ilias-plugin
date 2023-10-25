@@ -8,3 +8,4 @@ default_jupyter_notebook#:#Voreingestelltes Jupyter-Notebook (JSON)
 test_config#:#Konfiguration testen
 config_test_successful#:#Testverbindung zu Jupyterhub erfolgreich
 config_test_failed#:#Testverbindung zu Jupyterhub fehlgeschlagen mit der Nachricht:
+deletion_failed#:#Entfernen von veralteten Jupyter-Sitzungen fehlgeschlagen. Rechenressourcen konnten nicht freigegeben werden.
