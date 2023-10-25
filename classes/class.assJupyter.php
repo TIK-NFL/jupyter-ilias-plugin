@@ -42,6 +42,9 @@ class assJupyter extends assQuestion
     private $jupyter_exercise_id = 0;
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
+
+    private ilJupyterDBController $db_ctrl;
+
     private ilJupyterSettings $jupyter_settings;
 
     /**
@@ -62,6 +65,7 @@ class assJupyter extends assQuestion
         parent::__construct($title, $comment, $author, $owner, $question);
         $this->plugin = ilassJupyterPlugin::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
+        $this->db_ctrl = new ilJupyterDBController();
         $this->jupyter_settings = ilJupyterSettings::getInstance();
     }
 
@@ -148,6 +152,9 @@ class assJupyter extends assQuestion
 					'jupyter_exercise_id'	=> array('integer',(string) $this->getJupyterExerciseId()),
 				)
 		);
+
+        $this->db_ctrl->updateTemporarySessionUpdateTimestamp($this->getJupyterUser(), time());
+
         parent::saveToDb($original_id);
     }
 

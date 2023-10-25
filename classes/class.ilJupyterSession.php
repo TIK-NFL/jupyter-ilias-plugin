@@ -5,6 +5,7 @@ use exceptions\JupyterSessionNotFoundException;
 class ilJupyterSession
 {
     private ilJupyterRESTController $rest_ctrl;
+    private ilJupyterDBController $db_ctrl;
 
     private array $user_credentials;
 
@@ -17,6 +18,7 @@ class ilJupyterSession
     public function __construct($session_id = null)
     {
         $this->rest_ctrl = new ilJupyterRESTController();
+        $this->db_ctrl = new ilJupyterDBController();
 
         if (!$_SESSION['jupyter_sessions']) {
             $_SESSION['jupyter_sessions'] = array();
@@ -34,6 +36,7 @@ class ilJupyterSession
             }
         } else {
             $this->user_credentials = $this->rest_ctrl->initJupyterUser();
+            $this->db_ctrl->addTemporarySessionRecord($this->user_credentials);
             $this->session_id = $this->user_credentials['user'];
             $_SESSION['jupyter_sessions'][$this->session_id] = $this->user_credentials;
         }

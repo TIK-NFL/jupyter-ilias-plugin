@@ -64,4 +64,34 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
 	$ilDB->addPrimaryKey('il_qpl_qst_jupyter', array('question_fi'));
 }
 
+if (!$ilDB->tableExists('il_qpl_qst_jupyter_ntb')) {
+    $ilDB->createTable('il_qpl_qst_jupyter_ntb',
+        array(
+            'jupyter_user'	=>
+                array(
+                    'type'		=> 'text',
+                    'length'	=> 32,
+                    'default'	=> null,
+                    'notnull'	=> false
+                ),
+            'jupyter_token'	=>
+                array(
+                    'type'		=> 'text',
+                    'length'	=> 128,
+                    'default'	=> null,
+                    'notnull'	=> false
+                ),
+            'update_timestamp' =>
+                array(
+                    'type'		=> 'integer',
+                    'length'	=> 4,
+                    'default'	=> 0,
+                    'notnull'	=> false
+                ),
+        )
+    );
+
+    $ilDB->addPrimaryKey('il_qpl_qst_jupyter_ntb', array('jupyter_user'));
+}
+
 ?>
