@@ -483,7 +483,6 @@ class assJupyter extends assQuestion
 
         } else {
             $jupyter_session = new ilJupyterSession();
-            $jupyter_notebook_json = '{"content":{ "cells": [  ], "metadata": { "kernelspec": { "display_name": "Bash", "language": "bash", "name": "bash" }, "language_info": { "codemirror_mode": "shell", "file_extension": ".sh", "mimetype": "text/x-sh", "name": "bash" } }, "nbformat": 4, "nbformat_minor": 5}, "format":"json", "type":"notebook"}';
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
             $this->rest_ctrl->pushJupyterNotebook(
                 $this->jupyter_settings->getDefaultJupyterNotebook(),
