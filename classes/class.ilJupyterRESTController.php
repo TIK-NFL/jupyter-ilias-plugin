@@ -25,6 +25,8 @@ class ilJupyterRESTController
         $this->curl->setOpt(CURLOPT_SSL_VERIFYHOST, 0);
         $this->curl->setOpt(CURLOPT_SSL_VERIFYPEER, 0);
         $this->curl->setOpt(CURLOPT_RETURNTRANSFER, 1);
+//        $this->curl->setOpt(CURLOPT_HEADER, 1);
+//        $this->curl->setOpt(CURLOPT_FOLLOWLOCATION, 1);
 //        $this->curl->setOpt(CURLOPT_VERBOSE, 1);
 //        $this->curl->setOpt(CURLOPT_TIMEOUT_MS, 2000);
 //        $this->curl->setOpt(CURLOPT_HTTPHEADER, array("Accept" => "application/json", "Authorization" => "token secret-token"));
@@ -34,7 +36,7 @@ class ilJupyterRESTController
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException
      */
-    public function execCurlRequest($url, $http_method, $auth_token = '', $payload = '', $exceptionOnErrorCode = false, $returnHttpCode = false)
+    public function execCurlRequest($url, $http_method, $auth_token = '', $payload = '', $exceptionOnErrorCode = false, $returnHttpCode = false, $returnHttpBody = true)
     {
         try {
             $this->curl = new ilCurlConnection($url);
@@ -51,24 +53,29 @@ class ilJupyterRESTController
                 $this->curl->setOpt(CURLOPT_NOBODY, true);
             }
 
-            $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: token ' . $auth_token));
+            $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: Bearer ' . $auth_token));
 
             if ($payload) {
                 $this->curl->setOpt(CURLOPT_POSTFIELDS, $payload);
             }
 
-            $return_body = $this->curl->exec();
-
+            $response_body = $this->curl->exec();
             $response_code = (int)$this->curl->getInfo(CURLINFO_HTTP_CODE);
-            if ($exceptionOnErrorCode && $response_code > 300) {
+
+            if ($exceptionOnErrorCode && $response_code >= 400) {
                 throw new ilCurlErrorCodeException("HTTP server responded with error code " . $response_code . ". (exceptionOnErrorCode set)", $response_code);
             }
             ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
 
-            if ($returnHttpCode) {
+            if ($returnHttpCode && $returnHttpBody) {
+                return array(
+                    'response_code' => $response_code,
+                    'response_body' => $response_body
+                );
+            } else if ($returnHttpCode && !$returnHttpBody) {
                 return $response_code;
             }
-            return $return_body;
+            return $response_body;
 
         } catch (ilCurlConnectionException $exception) {
             ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
@@ -98,7 +105,7 @@ class ilJupyterRESTController
         $user_path = '';
 
         $root_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api";
-        $http_response_code = $this->execCurlRequest($root_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
+        $http_response_code = $this->execCurlRequest($root_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
 
         if ($http_response_code != 200) {
             throw new JupyterUnreachableServerException("Failed to call the jupyter REST API at " . $root_path);
@@ -107,7 +114,7 @@ class ilJupyterRESTController
         while (!$created && $increment < $max_tries) {
             $tmp_user = "u" . $microtime . '.' . $random_num . '.' . $increment;
             $user_path = $root_path . "/users/" . $tmp_user;
-            $http_response_code = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
+            $http_response_code = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
 
             if ($http_response_code == 404) {
                 ilLoggerFactory::getLogger('jupyter')->info("Creating temporary user '" . $tmp_user ."' for ILIAS account login '" . $login . "' at '" . $user_path . "'.");
@@ -118,7 +125,7 @@ class ilJupyterRESTController
                 $response_json = json_decode($response, false, 512, JSON_THROW_ON_ERROR);
                 $tmp_user_token = $response_json->token;
 
-                $http_code_user_created = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true);
+                $http_code_user_created = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
                 $created = ($http_code_user_created == 200);
             }
             $increment++;
