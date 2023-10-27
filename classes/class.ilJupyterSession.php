@@ -1,6 +1,10 @@
 <?php
 
 use exceptions\JupyterSessionNotFoundException;
+use exceptions\JupyterSessionException;
+use exceptions\ilCurlErrorCodeException;
+use exceptions\JupyterUnreachableServerException;
+
 
 class ilJupyterSession
 {
@@ -12,8 +16,12 @@ class ilJupyterSession
     private string $session_id = '';
 
     /**
+     * @throws JupyterSessionException
+     * @throws JupyterSessionNotFoundException
+     * @throws ilCurlErrorCodeException
+     * @throws ilCurlConnectionException
+     * @throws JupyterUnreachableServerException
      * @throws JsonException
-     * @throws Exception
      */
     public function __construct($session_id = null)
     {
@@ -74,7 +82,15 @@ class ilJupyterSession
         return false;
     }
 
-    public static function fromCredentials(array $user_credentials)
+    /**
+     * @throws JupyterSessionException
+     * @throws ilCurlConnectionException
+     * @throws JupyterSessionNotFoundException
+     * @throws ilCurlErrorCodeException
+     * @throws JupyterUnreachableServerException
+     * @throws JsonException
+     */
+    public static function fromCredentials(array $user_credentials): ilJupyterSession
     {
         $session_id = $user_credentials['user'];
         if (!self::isSessionSet($session_id)) {
@@ -82,7 +98,7 @@ class ilJupyterSession
             ilLoggerFactory::getLogger('jupyter')->debug("Obtaining a new jupyter session from credentials for user '" . $session_id . "'.");
             return new ilJupyterSession($session_id);
         } else {
-            $exception = new Exception("Could not override running Jupyter session with ID '" . $session_id . "'.");
+            $exception = new JupyterSessionException("Could not override running Jupyter session with ID '" . $session_id . "'.");
             ilLoggerFactory::getLogger('jupyter')->error($exception->getMessage());
             throw $exception;
         }

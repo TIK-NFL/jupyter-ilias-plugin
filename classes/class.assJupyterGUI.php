@@ -164,6 +164,7 @@ class assJupyterGUI extends assQuestionGUI
 
     /**
      * Show edit question form
+     *
      * @param ilPropertyFormGUI $form
      * @throws Exception
      */
@@ -181,12 +182,9 @@ class assJupyterGUI extends assQuestionGUI
 
     public function save(): void
     {
-        //TODO: $this->getJupyterQuestion()->deleteServerSideJupyterNotebook();
-
         $form = $this->initEditQuestionForm();
         if ($form->checkInput()) {
             $this->writeJupyterLabQuestionFromForm($form);
-
             parent::save();
         } else {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
@@ -195,14 +193,8 @@ class assJupyterGUI extends assQuestionGUI
         }
     }
 
-    /**
-     * Save and return
-     */
     public function saveReturn(): void
     {
-        //TODO: $this->getJupyterQuestion()->deleteServerSideJupyterNotebook();
-        $this->getJupyterQuestion()->deleteServerSideJupyterNotebook();
-
         $form = $this->initEditQuestionForm();
         if ($form->checkInput()) {
             $this->writeJupyterLabQuestionFromForm($form);
@@ -215,7 +207,13 @@ class assJupyterGUI extends assQuestionGUI
     }
 
     /**
-     * Set the JupyterLab Question attributes to the Input of the form.
+     * Set the jupyter question attributes to the input of the form.
+     *
+     * @param ilPropertyFormGUI $form
+     * @return true
+     * @throws JsonException
+     * @throws \exceptions\ilCurlErrorCodeException
+     * @throws ilCurlConnectionException
      */
     public function writeJupyterLabQuestionFromForm(ilPropertyFormGUI $form)
     {

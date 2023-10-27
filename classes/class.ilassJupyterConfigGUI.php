@@ -20,9 +20,6 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $this->tpl = $DIC['tpl'];
     }
 
-    /**
-     * Handles all commands, default is "configure"
-     */
     public function performCommand($cmd): void
     {
         global $ilTabs;
@@ -39,9 +36,6 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         }
     }
 
-    /**
-     * Configure plugin
-     */
     protected function configure(ilPropertyFormGUI $form = null)
     {
         $GLOBALS['ilTabs']->activateTab('tab_settings');
@@ -52,11 +46,6 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $GLOBALS['tpl']->setContent($form->getHTML());
     }
 
-    /**
-     * Init configuration form
-     *
-     * @return ilPropertyFormGUI
-     */
     protected function initConfigurationForm()
     {
         $this->getPluginObject()->includeClass('class.ilJupyterSettings.php');
@@ -100,9 +89,7 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         return $form;
     }
 
-    /**
-     * Save settings
-     */
+
     protected function save()
     {
         $form = $this->initConfigurationForm();

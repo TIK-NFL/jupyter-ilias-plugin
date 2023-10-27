@@ -9,5 +9,3 @@ $("#form_jupyterquestion").removeClass("preventDoubleSubmission");
 
 // Scoring
 $(":submit").removeClass("ilSubmitInactive");
-
-//TODO: Split up...

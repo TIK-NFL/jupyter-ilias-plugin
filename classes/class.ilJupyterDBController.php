@@ -1,23 +1,20 @@
 <?php
 
 
-use exceptions\ilCurlErrorCodeException;
-use exceptions\JupyterSessionException;
-use exceptions\JupyterUnreachableServerException;
-
 class ilJupyterDBController
 {
     const JUPYTER_INSTANCE_TABLE = 'il_qpl_qst_jupyter_ntb';
 
-    public function addTemporarySessionRecord($user_credentials) {
+    public function addTemporarySessionRecord($user_credentials)
+    {
         global $ilDB;
 
         $ilDB->insert(
             self::JUPYTER_INSTANCE_TABLE,
             array(
-                'jupyter_user'	=> array('text', (string) $user_credentials['user']),
-                'jupyter_token'	=> array('text', (string) $user_credentials['token']),
-                'update_timestamp'	=> array('integer', time()),
+                'jupyter_user' => array('text', (string)$user_credentials['user']),
+                'jupyter_token' => array('text', (string)$user_credentials['token']),
+                'update_timestamp' => array('integer', time()),
             )
         );
     }
@@ -36,7 +33,8 @@ class ilJupyterDBController
         return $number_affected_rows == 1;
     }
 
-    public function getTemporarySessionRecords() {
+    public function getTemporarySessionRecords(): array
+    {
         global $ilDB;
 
         $result = $ilDB->queryF("SELECT * FROM " . self::JUPYTER_INSTANCE_TABLE, array(), array());

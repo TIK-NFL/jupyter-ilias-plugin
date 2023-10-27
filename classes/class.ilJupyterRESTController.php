@@ -90,7 +90,7 @@ class ilJupyterRESTController
      * @throws JsonException
      * @throws JupyterUnreachableServerException
      */
-    public function initJupyterUser()
+    public function initJupyterUser(): array
     {
         $microtime = floor(microtime(true) * 1000);
         $random_num = str_pad(rand(1, 10**(10 - 1)), 10, '0', STR_PAD_LEFT);
@@ -142,7 +142,7 @@ class ilJupyterRESTController
     }
 
 
-    public function checkJupyterUser($user, $user_token)
+    public function checkJupyterUser($user, $user_token): bool
     {
         $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user, 'GET', $user_token, '', false, true, false);
         return $response_http_code == 200 || $response_http_code == 302;
@@ -222,6 +222,10 @@ class ilJupyterRESTController
         return $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true);
     }
 
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     */
     public function pushJupyterNotebook($jupyter_notebook_json_str, $user, $user_token)
     {
         $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";

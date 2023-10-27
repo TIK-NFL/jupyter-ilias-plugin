@@ -27,10 +27,10 @@ include_once "./Modules/TestQuestionPool/classes/class.assQuestion.php";
 include_once "./Modules/Test/classes/inc.AssessmentConstants.php";
 
 /**
- * Class for Mathematik Online based questions
+ * Class for Jupyter based questions.
  *
  * @author Stefan Meyer <smeyer.ilias@gmx.de>
- * @version    $Id$
+ * @version $Id$
  * @ingroup ModulesTestQuestionPool
  */
 class assJupyter extends assQuestion
@@ -48,10 +48,6 @@ class assJupyter extends assQuestion
     private ilJupyterSettings $jupyter_settings;
 
     /**
-     * jupyter lab question
-     *
-     * The constructor takes possible arguments an creates an instance of the assMathematikOnline object.
-     *
      * @param string $title A title string to describe the question
      * @param string $comment A comment string to describe the question
      * @param string $author A string containing the name of the questions author
@@ -117,16 +113,7 @@ class assJupyter extends assQuestion
         $this->jupyter_user = $jupyter_user;
     }
 
-    // -----------------------------------------------------------------------------------------------------------------
-    // -----------------------------------------------------------------------------------------------------------------
-    // -----------------------------------------------------------------------------------------------------------------
 
-    /**
-     * Returns true, if a single choice question is complete for use
-     *
-     * @return boolean True, if the single choice question is complete for use, otherwise false
-     * @access public
-     */
     function isComplete(): bool
     {
         return (($this->title) and ($this->author) and ($this->question) and ($this->getMaximumPoints() > 0));
@@ -179,7 +166,7 @@ class assJupyter extends assQuestion
             include_once("./Services/RTE/classes/class.ilRTE.php");
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"] ?? "", 1));
 
-//			$this->setEstimatedWorkingTimeFromDurationString($data["working_time"] ?? "");
+//			$this->setEstimatedWorkingTimeFromDurationString($data["working_time"] ?? "");  // TODO
 
             // load additional data
             $result = $ilDB->queryF("SELECT * FROM " . $this->getAdditionalTableName() . " WHERE question_fi = %s", array('integer'), array($question_id));
@@ -217,7 +204,6 @@ class assJupyter extends assQuestion
      * @param $owner
      * @param $a_test_obj_id
      * @return int
-     * @access public
      */
     public function duplicate($for_test = true, $title = "", $author = "", $owner = "", $a_test_obj_id = null): int
     {
@@ -299,13 +285,6 @@ class assJupyter extends assQuestion
     }
 
 
-    /**
-     * Copies an assMathematikOnline object
-     *
-     * Copies an assMathematikOnline object
-     *
-     * @access public
-     */
     function copyObject($target_questionpool, $title = "")
     {
         if ($this->id <= 0) {
@@ -374,9 +353,13 @@ class assJupyter extends assQuestion
         return $points;
     }
 
+    /**
+     * @param $solution
+     * @return int Zero since instant feedback is not supported by Jupyter
+     */
     protected function calculateReachedPointsForSolution($solution)
     {
-        return 0;  // since instant feedback is not supported by Jupyter
+        return 0;
     }
 
 
@@ -397,7 +380,7 @@ class assJupyter extends assQuestion
         $user_credentials = $jupyter_session->getUserCredentials();
         $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
 
-        //TODO: clean jupyter outputs
+        // TODO: Sanitize jupyter outputs
 
 		$ilDB->manipulateF(
 				'DELETE FROM tst_solutions '.
@@ -464,7 +447,6 @@ class assJupyter extends assQuestion
             try {
                 // Create session from local (ILIAS DB saved) credentials and pull the jupyter-notebook from jupyterhub.
                 // Jupyterhub sessions should not be shorter than ILIAS sessions.
-
                 $jupyter_session = ilJupyterSession::fromCredentials(array('user' => $jupyter_user, 'token' => $jupyter_token));
                 $jupyter_user_credentials = $jupyter_session->getUserCredentials();
                 $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
@@ -473,7 +455,6 @@ class assJupyter extends assQuestion
 
             } catch (ilCurlErrorCodeException $exception) {
                 // If the jupyter-notebook is not available on jupyterhub, push it from local database.
-
                 $jupyter_session = new ilJupyterSession();
                 $jupyter_notebook_json = $this->getJupyterExercise();
                 $jupyter_user_credentials = $jupyter_session->getUserCredentials();
@@ -482,6 +463,7 @@ class assJupyter extends assQuestion
             }
 
         } else {
+            // A jupyter session was not set before, thus create a new one.
             $jupyter_session = new ilJupyterSession();
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
             $this->rest_ctrl->pushJupyterNotebook(
@@ -518,10 +500,8 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * E.g., used for readonly sessions.
-     *
-     * @param $jupyter_notebook_json The notebook file as a JSON string
-     * @return array Jupyter user credentials
+     * @param $jupyter_notebook_json
+     * @return array
      */
     public function pushTemporaryJupyterNotebook($jupyter_notebook_json)
     {
@@ -538,8 +518,8 @@ class assJupyter extends assQuestion
      */
     public function cleanUpStaleJupyterNotebooks()
     {
-        // TODO: adjust values
-        // TODO: extract settings
+        // TODO: Adjust values
+        // TODO: Extract ILIAS settings
         $max_age_sec = 60;
         $max_sync_deviation_sec = 60;
 
@@ -569,8 +549,8 @@ class assJupyter extends assQuestion
             $metadata = $this->rest_ctrl->pullJupyterNotebookMetaData($jupyter_user, $this->jupyter_settings->getApiToken());
             if (!$metadata) {
                 ilLoggerFactory::getLogger('jupyter')->warning("Cleanup: Jupyter user '" . $jupyter_user . "' is present without the default jupyter notebook file. Failed to gather default notebook metadata.");
-                // Delete the session DB record nevertheless, since all future cleanup runs will attempt to delete this user.
-                // TODO: Extract ILIAS setting?
+                // Delete the session DB record nevertheless, since all future cleanup runs will attempt to delete this user on jupyterhub.
+                // TODO: Extract an ILIAS setting?
                 $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user);
                 continue;
             }
@@ -587,7 +567,6 @@ class assJupyter extends assQuestion
 
 
     /**
-     *
      * @param type $active_id
      * @param type $pass
      * @param type $obligationsAnswered
@@ -598,8 +577,6 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * Returns the question type of the question
-     *
      * Returns the question type of the question
      *
      * @return integer The question type of the question
@@ -624,8 +601,6 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * Returns the name of the answer table in the database
-     *
      * Returns the name of the answer table in the database
      *
      * @return string The answer table name
@@ -657,8 +632,6 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * required method stub
-     *
      * @param object $worksheet Reference to the parent excel worksheet
      * @param object $startrow Startrow of the output in the excel worksheet
      * @param object $active_id Active id of the participant
@@ -723,17 +696,25 @@ class assJupyter extends assQuestion
      */
     public function getBestSolution($active_id, $pass)
     {
-        $user_solution = array();
-        return $user_solution;
+        return array();
     }
 
 
-    public function getSolutionSubmit()
+    /**
+     * @return array Empty array since instant feedback preview is not supported by Jupyter
+     */
+    public function getSolutionSubmit(): array
     {
-        return array();  // instant feedback preview is not supported by Jupyter
+        return array();
     }
 
-    public function deleteServerSideJupyterNotebook($a_sent_id = 0)
+    /**
+     * Deletes the jupyter notebook on jupyterhub.
+     * Not implemented, since cleanups are handled by JupyterCleanupCron nevertheless.
+     *
+     * @param int $a_sent_id
+     */
+    public function deleteServerSideJupyterNotebook(int $a_sent_id = 0)
     {
         $exc_id = $a_sent_id ? $a_sent_id : $this->getJupyterExerciseId();
         if ($exc_id) {
@@ -750,8 +731,6 @@ class assJupyter extends assQuestion
      */
     public function lookupForExistingSolutions($activeId, $pass): array
     {
-        global $ilDB;
-
         $state = parent::lookupForExistingSolutions($activeId, $pass);
         $state['intermediate'] = true;
         return $state;

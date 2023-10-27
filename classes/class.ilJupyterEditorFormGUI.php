@@ -4,33 +4,25 @@ require_once('./Services/Form/classes/class.ilSubEnabledFormPropertyGUI.php');
 
 class ilJupyterEditorFormGUI extends ilFormPropertyGUI
 {
-    protected $show_editor = false;
-
-    private $jupyter_user_credentials = array();
-
-    /**
-     * @return array
-     */
-    public function getJupyterUserCredentials(): array
-    {
-        return $this->jupyter_user_credentials;
-    }
-
-    /**
-     * @param array $jupyter_user_credentials
-     */
-    public function setJupyterUserCredentials(array $jupyter_user_credentials): void
-    {
-        $this->jupyter_user_credentials = $jupyter_user_credentials;
-    }
-
+    protected bool $show_editor = false;
     protected $jupyterQuestion;
+    private array $jupyter_user_credentials = array();
 
     function __construct($a_title, $a_postvar, $a_JupyterQuestion)
     {
         parent::__construct($a_title, $a_postvar);
         $this->setType("custom");
         $this->jupyterQuestion = $a_JupyterQuestion;
+    }
+
+    public function getJupyterUserCredentials(): array
+    {
+        return $this->jupyter_user_credentials;
+    }
+
+    public function setJupyterUserCredentials(array $jupyter_user_credentials): void
+    {
+        $this->jupyter_user_credentials = $jupyter_user_credentials;
     }
 
     public function showEditor($a_show_editor)
@@ -42,16 +34,6 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
     {
     }
 
-    function getHtml()
-    {
-        $settings = ilJupyterSettings::getInstance();
-        $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_frame.html', TRUE, TRUE);
-        $applet->setVariable('JUPYTER_TEST', 'test');
-        $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/notebooks/default.ipynb?token=' . $this->jupyter_user_credentials['token']);
-
-        return $applet->get();
-    }
-
     function insert($a_tpl)
     {
         global $DIC;
@@ -60,6 +42,16 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
         $a_tpl->setVariable("CUSTOM_CONTENT", $this->getHtml());
         $a_tpl->parseCurrentBlock();
         $tpl->addJavaScript($this->jupyterQuestion->getPlugin()->getDirectory() . '/js/jupyter_init.js');
+    }
+
+    function getHtml()
+    {
+        $settings = ilJupyterSettings::getInstance();
+        $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_frame.html', TRUE, TRUE);
+        $applet->setVariable('JUPYTER_TEST', 'test');
+        $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/notebooks/default.ipynb?token=' . $this->jupyter_user_credentials['token']);
+
+        return $applet->get();
     }
 
     function checkInput(): bool

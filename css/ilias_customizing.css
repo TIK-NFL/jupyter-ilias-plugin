@@ -1,5 +1,4 @@
-/* Make the modal dialog wider for the ViPLab editor (overrides delos.css). */
-/* This CSS file is addressed by the ViPLab GWT frontend */
+/* Make the modal dialog wider Jupyter notebooks (overrides delos.css). */
 @media (min-width: 768px) {
     .modal-dialog {
         width: 90% !important;

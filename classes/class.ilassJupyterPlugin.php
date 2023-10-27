@@ -1,8 +1,6 @@
 <?php
 
 use exceptions\ilCurlErrorCodeException;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
 
 include_once "./Modules/TestQuestionPool/classes/class.ilQuestionsPlugin.php";
 
@@ -72,6 +70,11 @@ class ilassJupyterPlugin extends ilQuestionsPlugin
         include_once($this->getClassesDirectory() . "/" . $a_class_file_name);
     }
 
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
+     * @throws JsonException
+     */
     public function handleCronJob() {
         $jupyter = new assJupyter();
         $jupyter->cleanUpStaleJupyterNotebooks();
