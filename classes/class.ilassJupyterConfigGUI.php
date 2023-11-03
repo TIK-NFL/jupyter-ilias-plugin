@@ -73,6 +73,11 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $jupyterhub_server_url->setValue($settings->getJupyterhubServerUrl());
         $form->addItem($jupyterhub_server_url);
 
+        // Jupyterhub API path
+        $jupyterhub_api_path = new ilTextInputGUI($this->getPluginObject()->txt('jupyterhub_api_path'), 'jupyterhub_api_path');
+        $jupyterhub_api_path->setValue($settings->getJupyterhubApiPath());
+        $form->addItem($jupyterhub_api_path);
+
         // API token
         $api_token = new ilTextInputGUI($this->getPluginObject()->txt('api_token'), 'api_token');
         $api_token->setValue($settings->getApiToken());
@@ -100,6 +105,7 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
             $settings->setLogLevel($form->getInput('log_level'));
             $settings->setProxyUrl($form->getInput('proxy_url'));
             $settings->setJupyterhubServerUrl($form->getInput('jupyterhub_server_url'));
+            $settings->setJupyterhubApiPath($form->getInput('jupyterhub_api_path'));
             $settings->setApiToken($form->getInput('api_token'));
             $settings->setDefaultJupyterNotebook($form->getInput('default_jupyter_notebook'));
 

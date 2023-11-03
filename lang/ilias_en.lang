@@ -6,6 +6,7 @@ editor#:#Question Editor
 form_tab_settings_loglevel#:#Log-Level
 proxy_url#:#Proxy URL
 jupyterhub_server_url#:#Jupyterhub server URL
+jupyterhub_api_path#:#Jupyterhub API path
 api_token#:#API token
 default_jupyter_notebook#:#Default Jupyter Notebook (JSON)
 test_config#:#Test configuration

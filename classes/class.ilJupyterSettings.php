@@ -15,6 +15,8 @@ class ilJupyterSettings
 
     private string $jupyterhub_server_url;
 
+    private string $jupyterhub_api_path;
+
     private string $api_token;
 
     private string $default_jupyter_notebook;
@@ -35,6 +37,7 @@ class ilJupyterSettings
         $this->log_level = $this->getStorage()->get('log_level', '');
         $this->proxy_url = $this->getStorage()->get('proxy_url', '');
         $this->jupyterhub_server_url = $this->getStorage()->get('jupyterhub_server_url', '');
+        $this->jupyterhub_api_path = $this->getStorage()->get('jupyterhub_api_path', '');
         $this->api_token = $this->getStorage()->get('api_token', '');
         $this->default_jupyter_notebook = $this->getStorage()->get('default_jupyter_notebook', '');
     }
@@ -87,6 +90,16 @@ class ilJupyterSettings
         $this->jupyterhub_server_url = $jupyterhub_server_url;
     }
 
+    public function getJupyterhubApiPath(): string
+    {
+        return $this->jupyterhub_api_path;
+    }
+
+    public function setJupyterhubApiPath(string $jupyterhub_api_path): void
+    {
+        $this->jupyterhub_api_path = $jupyterhub_api_path;
+    }
+
     public function getApiToken(): string
     {
         return $this->api_token;
@@ -112,6 +125,7 @@ class ilJupyterSettings
         $this->getStorage()->set('log_level', (string)$this->log_level);
         $this->getStorage()->set('proxy_url', (string)$this->proxy_url);
         $this->getStorage()->set('jupyterhub_server_url', (string)$this->jupyterhub_server_url);
+        $this->getStorage()->set('jupyterhub_api_path', (string)$this->jupyterhub_api_path);
         $this->getStorage()->set('api_token', (string)$this->api_token);
         $this->getStorage()->set('default_jupyter_notebook', (string)$this->default_jupyter_notebook);
     }

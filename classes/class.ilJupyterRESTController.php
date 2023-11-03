@@ -104,7 +104,7 @@ class ilJupyterRESTController
         $tmp_user_token = "";
         $user_path = '';
 
-        $root_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api";
+        $root_path = $this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath();
         $http_response_code = $this->execCurlRequest($root_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
 
         if ($http_response_code != 200) {
@@ -154,7 +154,7 @@ class ilJupyterRESTController
      */
     public function deleteJupyterUser($user, $user_token): bool
     {
-        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $user, 'DELETE', $user_token, '', false, true, false);
+        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath() . "/users/" . $user, 'DELETE', $user_token, '', false, true, false);
 
         $deleted = $response_http_code == 204;
         if ($deleted) {
@@ -187,7 +187,7 @@ class ilJupyterRESTController
 
     public function pullJupyterUserMetaData($user, $user_token): array
     {
-        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users/" . $user;
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath() . "/users/" . $user;
         $response = $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true, true);
         $response_json = json_decode($response['response_body'], true, 512, JSON_THROW_ON_ERROR);
         if ($response['response_code'] == 200) {
@@ -206,7 +206,7 @@ class ilJupyterRESTController
      */
     public function pullJupyterUsers()
     {
-        $users_path = $this->jupyter_settings->getJupyterhubServerUrl() . "/hub/api/users";
+        $users_path = $this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath() . "/users";
         $response = $this->execCurlRequest($users_path, 'GET', $this->jupyter_settings->getApiToken());
         return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
     }
