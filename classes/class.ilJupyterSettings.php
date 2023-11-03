@@ -32,11 +32,11 @@ class ilJupyterSettings
 
     protected function init()
     {
-        $this->log_level = $this->getStorage()->get('log_level', $this->log_level);
-        $this->proxy_url = $this->getStorage()->get('proxy_url', $this->proxy_url);
-        $this->jupyterhub_server_url = $this->getStorage()->get('jupyterhub_server_url', $this->jupyterhub_server_url);
-        $this->api_token = $this->getStorage()->get('api_token', $this->api_token);
-        $this->default_jupyter_notebook = $this->getStorage()->get('default_jupyter_notebook', $this->default_jupyter_notebook);
+        $this->log_level = $this->getStorage()->get('log_level', '');
+        $this->proxy_url = $this->getStorage()->get('proxy_url', '');
+        $this->jupyterhub_server_url = $this->getStorage()->get('jupyterhub_server_url', '');
+        $this->api_token = $this->getStorage()->get('api_token', '');
+        $this->default_jupyter_notebook = $this->getStorage()->get('default_jupyter_notebook', '');
     }
 
     protected function getStorage(): ?ilSetting
