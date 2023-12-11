@@ -113,7 +113,7 @@ class ilJupyterRESTController
         }
 
         while (!$created && $increment < $max_tries) {
-            $tmp_user = "u" . $microtime . '.' . $random_num . '.' . $increment;
+            $tmp_user = "u" . $microtime . '_' . $random_num . '_' . $increment;
             $user_path = $root_path . "/users/" . $tmp_user;
             $http_response_code = $this->execCurlRequest($user_path, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
 
