@@ -82,26 +82,4 @@ class ilJupyterSession
         return false;
     }
 
-    /**
-     * @throws JupyterSessionException
-     * @throws ilCurlConnectionException
-     * @throws JupyterSessionNotFoundException
-     * @throws ilCurlErrorCodeException
-     * @throws JupyterUnreachableServerException
-     * @throws JsonException
-     */
-    public static function fromCredentials(array $user_credentials): ilJupyterSession
-    {
-        $session_id = $user_credentials['user'];
-        if (!self::isSessionSet($session_id)) {
-            $_SESSION['jupyter_sessions'][$session_id] = $user_credentials;
-            ilLoggerFactory::getLogger('jupyter')->debug("Obtaining a new jupyter session from credentials for user '" . $session_id . "'.");
-            return new ilJupyterSession($session_id);
-        } else {
-            $exception = new JupyterSessionException("Could not override running Jupyter session with ID '" . $session_id . "'.");
-            ilLoggerFactory::getLogger('jupyter')->error($exception->getMessage());
-            throw $exception;
-        }
-    }
-
 }
