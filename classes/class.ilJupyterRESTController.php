@@ -142,10 +142,10 @@ class ilJupyterRESTController
     }
 
 
-    public function checkJupyterUser($user, $user_token): bool
+    public function checkJupyterUser($user): bool
     {
-        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user, 'GET', $user_token, '', false, true, false);
-        return $response_http_code == 200 || $response_http_code == 302;
+        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath() . "/users/" . $user, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
+        return $response_http_code == 200;
     }
 
     /**
