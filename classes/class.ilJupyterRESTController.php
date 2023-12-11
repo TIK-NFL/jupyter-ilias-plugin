@@ -53,7 +53,8 @@ class ilJupyterRESTController
                 $this->curl->setOpt(CURLOPT_NOBODY, true);
             }
 
-            $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: Bearer ' . $auth_token));
+            $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: token ' . $auth_token));
+            $this->curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
 
             if ($payload) {
                 $this->curl->setOpt(CURLOPT_POSTFIELDS, $payload);
