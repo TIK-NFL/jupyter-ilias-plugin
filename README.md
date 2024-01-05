@@ -12,46 +12,50 @@ To avoid conflicts with the CORS policies, a `ProxyPass` must be specified on th
 The local path `/jupyter` must be mapped to the URL of jupyterhub for request as well as for response headers.
 
 The following example shows a ProxyPass to jupyterhub for HTTPS connections in apache webservers.
-Set the variables `jupyterhub_host` and `jupyterhub_url` accordingly.
+If needed, adjust the ProxyPass target host and port `jupyterhub_proxy:8000` accordingly.
 
 ```apacheconf
-<IfModule mod_ssl.c>
-    <VirtualHost _default_:443>
-        ServerAdmin webmaster@localhost
-        DocumentRoot /var/www/html
-        
-        SSLEngine on
-        SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
-        SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
-		
-        # ==================== Plugin specific configuration =====================
-        Define jupyterhub_host jupyterhub-1:8000
-        Define jupyterhub_url https://${jupyterhub_host}/jupyter 
-        
-        SSLProxyEngine On
-        ProxyRequests Off
-        
-        ProxyPass /jupyter ${jupyterhub_url}
-        ProxyPassReverse /jupyter ${jupyterhub_url}
-        
-        ProxyPass /jupyter/hub ${jupyterhub_url}/hub
-        ProxyPassReverse /jupyter/hub ${jupyterhub_url}/hub
-        
-        ProxyPass /jupyter/user ${jupyterhub_url}/user
-        ProxyPassReverse /jupyter/user ${jupyterhub_url}/user
-        
-        RewriteEngine on
-        RewriteCond %{HTTP:Upgrade} websocket [NC]
-        RewriteCond %{HTTP:Connection} upgrade [NC]
-        RewriteRule ^/?(.*) "wss://${jupyterhub_host}/$1" [P,L]
-        # ========================================================================
-    </VirtualHost>
-</IfModule>
+<VirtualHost _default_:443>
+    DocumentRoot /var/www/html
+
+    #
+    # SSL config
+    #
+
+    SSLEngine on
+    SSLCertificateFile	/etc/ssl/certs/server.crt
+    SSLCertificateKeyFile /etc/ssl/private/server.key
+
+    #
+    # SSL reverse proxy
+    #
+
+    SSLProxyEngine On
+
+    # TODO: Disabled for development. Be sure to remove/enable in production environments.
+    SSLProxyVerify none
+    SSLProxyCheckPeerName off
+
+    # Rewrite rules to proxy websocket connections
+    RewriteEngine on
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule /jupyter/(.*) "wss://jupyterhub_proxy:8000/jupyter/$1" [P,L]
+
+    <Location "/jupyter">
+        # preserve host header to avoid cross-origin problems
+        ProxyPreserveHost on
+        ProxyPass         https://jupyterhub_proxy:8000/jupyter
+        ProxyPassReverse  https://jupyterhub_proxy:8000/jupyter
+        RequestHeader     set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+    </Location>
+
+</VirtualHost>
 ```
 
-Note that the apache modules `ssl`, `proxy` and `proxy_http` must also be enabled:
+Enable the following apache modules required by the configuration above and restart the webserver:
 ```
-a2enmod ssl proxy proxy_http
+a2enmod ssl rewrite proxy headers proxy_http proxy_wstunnel
 systemctl restart apache.service
 ```
 
