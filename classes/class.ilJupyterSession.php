@@ -77,7 +77,9 @@ class ilJupyterSession
 
         if (isset($_SESSION['jupyter_sessions'][$session_id])) {
             $user_credentials = $_SESSION['jupyter_sessions'][$session_id];
-            return $rest_ctrl->checkJupyterUser($user_credentials['user']);
+            $user_exists = $rest_ctrl->checkJupyterUser($user_credentials['user']);
+            $user_server_reachable = $rest_ctrl->checkJupyterUserServer($user_credentials['user'], $user_credentials['token']);
+            return $user_exists && $user_server_reachable;
         }
         return false;
     }

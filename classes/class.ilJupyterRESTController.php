@@ -149,6 +149,13 @@ class ilJupyterRESTController
         return $response_http_code == 200;
     }
 
+    public function checkJupyterUserServer($user, $user_token): bool
+    {
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/status";
+        $response_http_code = $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', false, true, false);
+        return $response_http_code == 200;
+    }
+
     /**
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException
