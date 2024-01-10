@@ -434,13 +434,14 @@ class assJupyter extends assQuestion
     public function synchronizeJupyterSession()
     {
         $jupyter_user = $this->getJupyterUser();
+        $jupyter_session_set = ilJupyterSession::isSessionSet($jupyter_user);
 
-        if ($jupyter_user && ilJupyterSession::isSessionSet($jupyter_user)) {
+        if ($jupyter_user && $jupyter_session_set) {
             // A jupyter session was set before and is still active. Thus, reuse the existing jupyter-notebook from jupyterhub.
             $jupyter_session = new ilJupyterSession($jupyter_user);
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
 
-        } else if ($jupyter_user && !ilJupyterSession::isSessionSet($jupyter_user)) {
+        } else if ($jupyter_user && !$jupyter_session_set) {
             // Jupyter session is no longer active, thus create a new session and push the notebook stored in the local database.
             $jupyter_session = new ilJupyterSession();
             $jupyter_notebook_json = $this->getJupyterExercise();

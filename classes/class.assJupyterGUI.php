@@ -122,7 +122,6 @@ class assJupyterGUI extends assQuestionGUI
 
         // points
         $points = new ilNumberInputGUI($lng->txt("points"), "points");
-        $p = $this->object->getPoints();
         $points->setValue($this->object->getPoints());
         $points->setRequired(TRUE);
         $points->setSize(3);
@@ -130,15 +129,10 @@ class assJupyterGUI extends assQuestionGUI
         $form->addItem($points);
 
         if ($this->object->getId()) {
-            $hidden = new ilHiddenInputGUI("", "ID");
+            $hidden = new ilHiddenInputGUI("jupyter_question_id");
             $hidden->setValue($this->object->getId());
             $form->addItem($hidden);
         }
-
-        // add hidden exercise
-        $hidden_exc = new ilHiddenInputGUI('jupyterexercise');
-        $hidden_exc->setValue($this->getJupyterQuestion()->getJupyterExercise());
-        $form->addItem($hidden_exc);
 
         // add jupyter session id
         $hidden_jupyter_session = new ilHiddenInputGUI('jupyter_session_id');
@@ -223,9 +217,10 @@ class assJupyterGUI extends assQuestionGUI
         $jupyterQuestion->setAuthor($form->getInput('author'));
         $jupyterQuestion->setQuestion($form->getInput('question'));
         $jupyterQuestion->setPoints($form->getInput('points'));
+        $jupyterQuestion->setId($form->getInput('jupyter_question_id'));
 
-        $jupyter_session_id = $form->getInput('jupyter_session_id');  // TODO: use session_id/jupyter_user from DB (?)
-        $jupyterQuestion->setJupyterUser($form->getInput('jupyter_session_id'));
+        $jupyter_session_id = $form->getInput('jupyter_session_id');
+        $jupyterQuestion->setJupyterUser($jupyter_session_id);
 
         $jupyter_session = new ilJupyterSession($jupyter_session_id);
         $user_credentials = $jupyter_session->getUserCredentials();
@@ -235,8 +230,6 @@ class assJupyterGUI extends assQuestionGUI
         // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
         $jupyterQuestion->setJupyterExercise($jupyter_notebook_json);
-
-        ilLoggerFactory::getLogger('jupyter')->debug(print_r($form->getInput('jupyterexercise'), true));
 
         return true;
     }
