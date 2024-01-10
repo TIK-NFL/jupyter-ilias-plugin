@@ -99,7 +99,7 @@ class ilJupyterRESTController
         $increment = 0;
 
         $created = false;
-        $max_tries = 3;  // TODO: extract attribute/property
+        $max_tries = 3;
 
         $tmp_user = "";
         $tmp_user_token = "";

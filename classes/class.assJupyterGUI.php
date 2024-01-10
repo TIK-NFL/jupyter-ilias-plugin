@@ -226,8 +226,9 @@ class assJupyterGUI extends assQuestionGUI
         $user_credentials = $jupyter_session->getUserCredentials();
         $jupyterQuestion->setJupyterToken($user_credentials['token']);
 
-        // TODO: Consider (probably unnecessarily) the case when the notebook is deleted on jupyterhub while editing. => Produces ilCurlErrorCodeException (404).
-        // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
+        // When the notebook is deleted on jupyterhub while editing, ilCurlErrorCodeException (404) will be thrown.
+        // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed,
+        // which should by session length definition never be the case.
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
         $jupyterQuestion->setJupyterExercise($jupyter_notebook_json);
 
@@ -312,7 +313,7 @@ class assJupyterGUI extends assQuestionGUI
             foreach ($solutions as $idx => $solution_value) {
                 $user_solution = $solution_value["value2"];
                 $this->object->setJupyterExercise($user_solution);
-                // TODO reuse session to improve efficiency? Furthermore larger, outputs need to be uploaded again...
+                // TODO: A jupyter session might be reused to improve efficiency, since larger notebooks are repeatedly pushed to jupyterhub on every solution review.
             }
         }
 

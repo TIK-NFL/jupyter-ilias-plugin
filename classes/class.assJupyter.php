@@ -166,8 +166,6 @@ class assJupyter extends assQuestion
             include_once("./Services/RTE/classes/class.ilRTE.php");
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"] ?? "", 1));
 
-//			$this->setEstimatedWorkingTimeFromDurationString($data["working_time"] ?? "");  // TODO
-
             // load additional data
             $result = $ilDB->queryF("SELECT * FROM " . $this->getAdditionalTableName() . " WHERE question_fi = %s", array('integer'), array($question_id));
 
@@ -380,7 +378,7 @@ class assJupyter extends assQuestion
         $user_credentials = $jupyter_session->getUserCredentials();
         $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
 
-        // TODO: Sanitize jupyter outputs
+        // TODO: If required, jupyter notebook outputs might be sanitized here.
 
 		$ilDB->manipulateF(
 				'DELETE FROM tst_solutions '.
@@ -423,13 +421,13 @@ class assJupyter extends assQuestion
     /**
      * Synchronizes the Jupyter (open notebooks) between the Jupyterhub and ILIAS.
      *
-     * TODO: Consider expiration of jupyter notebooks.
-     * TODO: Refine ilCurlErrorCodeException handling. For now, assume that the jupyter notebook has been cleaned up on jupyterhub (not during an ILIAS session).
-     * TODO: Jupyter notebook version comparison. Mismatch when saved on jupyterhub (via browser) but not in ILIAS...
-     *
+     * TODO: Refine ilCurlErrorCodeException handling (case: $jupyter_user && !$jupyter_session_set).
+     * TODO: For now, assume that the jupyter notebook has been cleaned up on jupyterhub (not during an ILIAS session).
+     * TODO: $jupyter_session_set might be false for other reasons, e.g., single user server failure.
      *
      * @throws JsonException
      * @throws ilCurlConnectionException
+     * @throws ilCurlErrorCodeException
      */
     public function synchronizeJupyterSession()
     {
@@ -506,8 +504,7 @@ class assJupyter extends assQuestion
      */
     public function cleanUpStaleJupyterNotebooks()
     {
-        // TODO: Adjust values
-        // TODO: Extract ILIAS settings
+        // TODO: Adjust values and extract ILIAS settings
         $max_age_sec = 60;
         $max_sync_deviation_sec = 60;
 
@@ -537,8 +534,8 @@ class assJupyter extends assQuestion
             $metadata = $this->rest_ctrl->pullJupyterNotebookMetaData($jupyter_user, $this->jupyter_settings->getApiToken());
             if (!$metadata) {
                 ilLoggerFactory::getLogger('jupyter')->warning("Cleanup: Jupyter user '" . $jupyter_user . "' is present without the default jupyter notebook file. Failed to gather default notebook metadata.");
-                // Delete the session DB record nevertheless, since all future cleanup runs will attempt to delete this user on jupyterhub.
-                // TODO: Extract an ILIAS setting?
+                // Delete the session DB record nevertheless, i.e., give up deleting this user on jupyterhub,
+                // since no metadata is available to calculate the cleanup time of a jupyter notebook.
                 $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user);
                 continue;
             }
