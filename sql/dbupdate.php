@@ -45,10 +45,11 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
 					'default'	=> null,
 					'notnull'	=> false
 				),
-			'jupyter_exercise'	=>
+			'jupyter_exercise_res_id'	=>
 				array(
-					'type'		=> 'clob',
-					'default'	=> '',
+					'type'		=> 'text',
+                    'length'	=> 128,
+					'default'	=> null,
 					'notnull'	=> false
 				),
             'jupyter_exercise_id' =>
@@ -56,7 +57,7 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
                     'type'		=> 'integer',
                     'length'	=> 4,
                     'default'	=> 0,
-                    'notnull'	=> TRUE
+                    'notnull'	=> true
                 ),
 		)
 	);
@@ -94,4 +95,37 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter_ntb')) {
     $ilDB->addPrimaryKey('il_qpl_qst_jupyter_ntb', array('jupyter_user'));
 }
 
+if (!$ilDB->tableExists('il_qpl_qst_jupyter_dsr')) {
+    $ilDB->createTable('il_qpl_qst_jupyter_dsr',
+        array(
+            'solution_id' =>
+                array(
+                    'type'		=> 'integer',
+                    'length'	=> 4,
+                    'default'	=> 0,
+                    'notnull'	=> true
+                ),
+            'resource_id'	=>
+                array(
+                    'type'		=> 'text',
+                    'length'	=> 128,
+                    'default'	=> null,
+                    'notnull'	=> false
+                )
+        )
+    );
+
+    $ilDB->addPrimaryKey('il_qpl_qst_jupyter_dsr', array('solution_id'));
+
+    $ilDB->query(
+        'CREATE TRIGGER del_jpy_sol_res ' .
+        'AFTER DELETE ON tst_solutions ' .
+        'FOR EACH ROW BEGIN ' .
+        'IF (old.value1 = \'jupyter_solution_resource_id\') THEN ' .
+        'INSERT INTO il_qpl_qst_jupyter_dsr (solution_id, resource_id) ' .
+        'VALUES (old.solution_id, old.value2); ' .
+        'END IF;' .
+        'END;'
+    );
+}
 ?>

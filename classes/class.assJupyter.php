@@ -22,6 +22,7 @@
 */
 
 use exceptions\ilCurlErrorCodeException;
+use ILIAS\ResourceStorage\Resource\ResourceNotFoundException;
 
 include_once "./Modules/TestQuestionPool/classes/class.assQuestion.php";
 include_once "./Modules/Test/classes/inc.AssessmentConstants.php";
@@ -38,12 +39,14 @@ class assJupyter extends assQuestion
     const ADDITIONAL_TBL_NAME = 'il_qpl_qst_jupyter';
     private $jupyter_user = '';
     private $jupyter_token = '';
-    private $jupyter_exercise = '';
+    private $jupyter_exercise_resource_id = '';
     private $jupyter_exercise_id = 0;
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
 
     private ilJupyterDBController $db_ctrl;
+
+    private ilJupyterResourceController $resource_ctrl;
 
     private ilJupyterSettings $jupyter_settings;
 
@@ -62,6 +65,7 @@ class assJupyter extends assQuestion
         $this->plugin = ilassJupyterPlugin::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
         $this->db_ctrl = new ilJupyterDBController();
+        $this->resource_ctrl = new ilJupyterResourceController();
         $this->jupyter_settings = ilJupyterSettings::getInstance();
     }
 
@@ -83,14 +87,14 @@ class assJupyter extends assQuestion
         return $this->jupyter_token;
     }
 
-    public function setJupyterExercise($a_exc)
+    public function setJupyterExerciseResourceId($res_id)
     {
-        $this->jupyter_exercise = $a_exc;
+        $this->jupyter_exercise_resource_id = $res_id;
     }
 
-    public function getJupyterExercise()
+    public function getJupyterExerciseResourceId()
     {
-        return $this->jupyter_exercise;
+        return $this->jupyter_exercise_resource_id;
     }
 
     public function setJupyterExerciseId($a_exc)
@@ -135,14 +139,14 @@ class assJupyter extends assQuestion
 					'question_fi'	=> array('integer',(int) $this->getId()),
 					'jupyter_user'	=> array('text', (string) $this->getJupyterUser()),
 					'jupyter_token'	=> array('text', (string) $this->getJupyterToken()),
-					'jupyter_exercise'	=> array('clob',(string) $this->getJupyterExercise()),
-					'jupyter_exercise_id'	=> array('integer',(string) $this->getJupyterExerciseId()),
+					'jupyter_exercise_res_id'	=> array('text', (string) $this->getJupyterExerciseResourceId()),
+					'jupyter_exercise_id'	=> array('integer', (string) $this->getJupyterExerciseId()),
 				)
 		);
 
         $this->db_ctrl->updateTemporarySessionUpdateTimestamp($this->getJupyterUser(), time());
 
-        parent::saveToDb($original_id);
+        parent::saveToDb();
     }
 
 
@@ -173,7 +177,7 @@ class assJupyter extends assQuestion
                 $data = $ilDB->fetchAssoc($result);
                 $this->setJupyterUser((string)$data['jupyter_user']);
                 $this->setJupyterToken((string)$data['jupyter_token']);
-                $this->setJupyterExercise((string)$data['jupyter_exercise']);
+                $this->setJupyterExerciseResourceId((string)$data['jupyter_exercise_res_id']);
                 $this->setJupyterExerciseId((int)$data['jupyter_exercise_id']);
             }
         }
@@ -337,7 +341,6 @@ class assJupyter extends assQuestion
     {
         global $ilDB;
 
-        $found_values = array();
         if (is_null($pass)) {
             $pass = $this->getSolutionMaxPass($active_id);
         }
@@ -372,33 +375,52 @@ class assJupyter extends assQuestion
             $pass = ilObjTest::_getPass($active_id);
         }
 
-        // Probably consider the case when the notebook is deleted on jupyterhub while editing. => Produces ilCurlErrorCodeException (404).
+        // If a jupyter notebook is deleted on jupyterhub while being edited, an ilCurlErrorCodeException (404) will be produced on save.
         // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
         $jupyter_session = new ilJupyterSession($_POST['jupyter_user']);
         $user_credentials = $jupyter_session->getUserCredentials();
         $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
 
-        // TODO: If required, jupyter notebook outputs might be sanitized here.
+        $result = $ilDB->queryF(
+                'SELECT * FROM tst_solutions ' .
+                'WHERE active_fi = %s ' .
+                'AND question_fi = %s ' .
+                'AND pass = %s ' .
+                'AND value1 = %s',
+            array('integer', 'integer', 'integer', 'text'),
+            array($active_id, $this->getId(), $pass, 'jupyter_solution_resource_id')
+        );
+
+        // If existent, clean up previously saved jupyter resource.
+        if ($result->numRows() == 1) {
+            $data = $ilDB->fetchAssoc($result);
+            $this->resource_ctrl->deleteJupyterResource($data['value2']);
+        }
 
 		$ilDB->manipulateF(
 				'DELETE FROM tst_solutions '.
 				'WHERE active_fi = %s '.
 				'AND question_fi = %s '.
 				'AND pass = %s '.
-				'AND value1 != %s',
+				'AND value1 = %s',
 			array('integer', 'integer', 'integer', 'text'),
-			array($active_id, $this->getId(), $pass, "0")
+			array($active_id, $this->getId(), $pass, 'jupyter_solution_resource_id')
 		);
 
         $next_id = $ilDB->nextId('tst_solutions');
+
+        $res_id = $this->resource_ctrl->storeJupyterResource(
+            $solution, ilJupyterResourceController::JUPYTER_SOLUTION_RESOURCE
+        );
+
 		$ilDB->insert(
 			"tst_solutions", 
 			array(
 				'solution_id' => array("integer", $next_id),
 				"active_fi" => array("integer", $active_id),
 				"question_fi" => array("integer", $this->getId()),
-				"value1" => array("clob", 'jupytersolution'),
-				"value2" => array("clob", $solution),
+				"value1" => array("clob", 'jupyter_solution_resource_id'),
+				"value2" => array("clob", $res_id),
 				"pass" => array("integer", $pass),
 				"tstamp" => array("integer", time())
 			)
@@ -428,6 +450,7 @@ class assJupyter extends assQuestion
      * @throws JsonException
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException
+     * @throws ResourceNotFoundException
      */
     public function synchronizeJupyterSession()
     {
@@ -442,7 +465,7 @@ class assJupyter extends assQuestion
         } else if ($jupyter_user && !$jupyter_session_set) {
             // Jupyter session is no longer active, thus create a new session and push the notebook stored in the local database.
             $jupyter_session = new ilJupyterSession();
-            $jupyter_notebook_json = $this->getJupyterExercise();
+            $jupyter_notebook_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
             $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
             ilLoggerFactory::getLogger('jupyter')->debug("Jupyter notebook for user '" . $jupyter_user . "' not available on jupyterhub. New jupyter session created.");
@@ -469,10 +492,10 @@ class assJupyter extends assQuestion
     public function pushLocalJupyterNotebook()
     {
         $jupyter_session = new ilJupyterSession();
-        $jupyter_notebook_json = $this->getJupyterExercise();
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
         $this->jupyter_user = $jupyter_user_credentials['user'];
         $this->jupyter_token = $jupyter_user_credentials['token'];
+        $jupyter_notebook_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
         $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $this->jupyter_user, $this->jupyter_token);
     }
 
@@ -495,6 +518,18 @@ class assJupyter extends assQuestion
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
         $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
         return $jupyter_user_credentials;
+    }
+
+    public function deleteAdditionalTableData(int $question_id): void
+    {
+        global $ilDB;
+        $result = $ilDB->queryF("SELECT * FROM " . $this->getAdditionalTableName() . " WHERE question_fi = %s", array('integer'), array($question_id));
+
+        if ($result->numRows() > 0) {
+            $res_id = $ilDB->fetchAssoc($result)['jupyter_exercise_res_id'];
+            parent::deleteAdditionalTableData($question_id);
+            $this->resource_ctrl->deleteJupyterResource($res_id);
+        }
     }
 
     /**

@@ -83,7 +83,9 @@ class assJupyterExport extends assQuestionExport
         $a_xml_writer->xmlStartTag("material");
 
         $a_xml_writer->xmlElement("mattext", ["label" => "points"], $this->object->getPoints());
-        $jupyterExerciseEncoded = base64_encode($this->object->getJupyterExercise());
+        $jupyterExerciseEncoded = base64_encode(
+            (new ilJupyterResourceController())->readJupyterResource($this->object->getJupyterExerciseResourceId())
+        );
         $a_xml_writer->xmlElement("mattext", ["label" => "jupyterExercise"], $jupyterExerciseEncoded);
         $a_xml_writer->xmlElement("mattext", ["label" => "jupyterUser"], $this->object->getJupyterUser());
         $a_xml_writer->xmlElement("mattext", ["label" => "jupyterUserToken"], $this->object->getJupyterToken());

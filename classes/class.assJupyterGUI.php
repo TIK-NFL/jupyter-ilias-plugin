@@ -16,6 +16,7 @@ include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
 class assJupyterGUI extends assQuestionGUI
 {
     private ilJupyterRESTController $rest_ctrl;
+    private ilJupyterResourceController $resource_ctrl;
     private ilJupyterSettings $settings;
 
 
@@ -26,6 +27,7 @@ class assJupyterGUI extends assQuestionGUI
         $this->newUnitId = null;
         $this->settings = ilJupyterSettings::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
+        $this->resource_ctrl = new ilJupyterResourceController();
 
         if ($a_id >= 0) {
             $this->object->loadFromDb($a_id);
@@ -178,7 +180,7 @@ class assJupyterGUI extends assQuestionGUI
     {
         $form = $this->initEditQuestionForm();
         if ($form->checkInput()) {
-            $this->writeJupyterLabQuestionFromForm($form);
+            $this->writeJupyterQuestionFromForm($form);
             parent::save();
         } else {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
@@ -191,7 +193,7 @@ class assJupyterGUI extends assQuestionGUI
     {
         $form = $this->initEditQuestionForm();
         if ($form->checkInput()) {
-            $this->writeJupyterLabQuestionFromForm($form);
+            $this->writeJupyterQuestionFromForm($form);
             parent::saveReturn();
         } else {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
@@ -209,7 +211,7 @@ class assJupyterGUI extends assQuestionGUI
      * @throws \exceptions\ilCurlErrorCodeException
      * @throws ilCurlConnectionException
      */
-    public function writeJupyterLabQuestionFromForm(ilPropertyFormGUI $form)
+    public function writeJupyterQuestionFromForm(ilPropertyFormGUI $form)
     {
         $jupyterQuestion = $this->getJupyterQuestion();
         $jupyterQuestion->setTitle($form->getInput('title'));
@@ -226,11 +228,21 @@ class assJupyterGUI extends assQuestionGUI
         $user_credentials = $jupyter_session->getUserCredentials();
         $jupyterQuestion->setJupyterToken($user_credentials['token']);
 
+        // If existent, clean up previously saved jupyter resource.
+        $old_res_id = $jupyterQuestion->getJupyterExerciseResourceId();
+        if ($old_res_id) {
+            $this->resource_ctrl->deleteJupyterResource($old_res_id);
+        }
+
         // When the notebook is deleted on jupyterhub while editing, ilCurlErrorCodeException (404) will be thrown.
         // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed,
         // which should by session length definition never be the case.
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
-        $jupyterQuestion->setJupyterExercise($jupyter_notebook_json);
+        $res_id = $this->resource_ctrl->storeJupyterResource(
+            $jupyter_notebook_json,
+            ilJupyterResourceController::JUPYTER_QUESTION_RESOURCE
+        );
+        $jupyterQuestion->setJupyterExerciseResourceId($res_id);
 
         return true;
     }
@@ -264,8 +276,8 @@ class assJupyterGUI extends assQuestionGUI
         if ($active_id) {
             $solutions = $this->object->getTestOutputSolutions($active_id, $pass);
             foreach ($solutions as $idx => $solution_value) {
-                $user_solution = $solution_value["value2"];
-                $this->object->setJupyterExercise($user_solution);
+                $solution_res_id = $solution_value["value2"];
+                $this->object->setJupyterExerciseResourceId($solution_res_id);
             }
         }
 
@@ -311,8 +323,8 @@ class assJupyterGUI extends assQuestionGUI
         if ($active_id > 0) {
             $solutions = $this->object->getSolutionValues($active_id, $pass);
             foreach ($solutions as $idx => $solution_value) {
-                $user_solution = $solution_value["value2"];
-                $this->object->setJupyterExercise($user_solution);
+                $solution_res_id = $solution_value["value2"];
+                $this->object->setJupyterExerciseResourceId($solution_res_id);
                 // TODO: A jupyter session might be reused to improve efficiency, since larger notebooks are repeatedly pushed to jupyterhub on every solution review.
             }
         }
