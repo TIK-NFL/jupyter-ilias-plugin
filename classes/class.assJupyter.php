@@ -533,6 +533,26 @@ class assJupyter extends assQuestion
     }
 
     /**
+     * @throws ResourceNotFoundException
+     */
+    public function cleanUpUnreferencedSolutionResources() {
+        global $ilDB;
+
+        $result = $ilDB->queryF('SELECT * FROM il_qpl_qst_jupyter_dsr', array(), array());
+        while ($data = $ilDB->fetchAssoc($result)) {
+            $rid = $data['resource_id'];
+            try {
+                $this->resource_ctrl->deleteJupyterResource($rid);
+            } catch (ResourceNotFoundException $rnfe) {
+                // do nothing.
+            } finally {
+                // delete the resource id record, even if the resource is not present on the resource storage.
+                $ilDB->manipulateF('DELETE FROM il_qpl_qst_jupyter_dsr WHERE resource_id = %s', array('text'), array($rid));
+            }
+        }
+    }
+
+    /**
      * @throws ilCurlConnectionException
      * @throws JsonException
      * @throws ilCurlErrorCodeException
