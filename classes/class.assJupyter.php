@@ -532,9 +532,6 @@ class assJupyter extends assQuestion
         }
     }
 
-    /**
-     * @throws ResourceNotFoundException
-     */
     public function cleanUpUnreferencedSolutionResources() {
         global $ilDB;
 

@@ -70,13 +70,8 @@ class ilassJupyterPlugin extends ilQuestionsPlugin
         include_once($this->getClassesDirectory() . "/" . $a_class_file_name);
     }
 
-    /**
-     * @throws ilCurlConnectionException
-     * @throws ilCurlErrorCodeException
-     * @throws JsonException
-     */
     public function handleCronJob() {
         $jupyter = new assJupyter();
-        $jupyter->cleanUpStaleJupyterNotebooks();
+        $jupyter->cleanUpUnreferencedSolutionResources();
     }
 }
