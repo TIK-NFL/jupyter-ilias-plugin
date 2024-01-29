@@ -4,7 +4,7 @@ use ILIAS\Filesystem\Stream\Streams;
 use ILIAS\ResourceStorage\Resource\ResourceNotFoundException;
 use ILIAS\ResourceStorage\Services;
 
-class ilJupyterResourceController
+class ilJupyterIRSSController
 {
     public const JUPYTER_GENERAL_RESOURCE = 'jupyterGeneralResource';
     public const JUPYTER_QUESTION_RESOURCE = 'jupyterQuestionResource';
@@ -22,7 +22,7 @@ class ilJupyterResourceController
      * @throws Exception
      */
     public function storeJupyterResource(string $resource_content,
-                                         string $title = ilJupyterResourceController::JUPYTER_GENERAL_RESOURCE): string
+                                         string $title = ilJupyterIRSSController::JUPYTER_GENERAL_RESOURCE): string
     {
         $fs = Streams::ofString($resource_content);
         $res_ident = $this->resourceStorage->manage()->stream($fs, ilJupyterStakeholder::getInstance(), $title);
@@ -35,7 +35,7 @@ class ilJupyterResourceController
     public function storeJupyterResourceRevision(
         string $resource_content,
         string $resource_id = null,
-        string $title = ilJupyterResourceController::JUPYTER_GENERAL_RESOURCE): string
+        string $title = ilJupyterIRSSController::JUPYTER_GENERAL_RESOURCE): string
     {
         if ($resource_id) {
             $res_ident  = $this->resourceStorage->manage()->find($resource_id);

@@ -46,7 +46,7 @@ class assJupyter extends assQuestion
 
     private ilJupyterDBController $db_ctrl;
 
-    private ilJupyterResourceController $resource_ctrl;
+    private ilJupyterIRSSController $resource_ctrl;
 
     private ilJupyterSettings $jupyter_settings;
 
@@ -65,7 +65,7 @@ class assJupyter extends assQuestion
         $this->plugin = ilassJupyterPlugin::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
         $this->db_ctrl = new ilJupyterDBController();
-        $this->resource_ctrl = new ilJupyterResourceController();
+        $this->resource_ctrl = new ilJupyterIRSSController();
         $this->jupyter_settings = ilJupyterSettings::getInstance();
     }
 
@@ -410,7 +410,7 @@ class assJupyter extends assQuestion
         $next_id = $ilDB->nextId('tst_solutions');
 
         $res_id = $this->resource_ctrl->storeJupyterResource(
-            $solution, ilJupyterResourceController::JUPYTER_SOLUTION_RESOURCE
+            $solution, ilJupyterIRSSController::JUPYTER_SOLUTION_RESOURCE
         );
 
 		$ilDB->insert(

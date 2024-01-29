@@ -16,7 +16,7 @@ include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
 class assJupyterGUI extends assQuestionGUI
 {
     private ilJupyterRESTController $rest_ctrl;
-    private ilJupyterResourceController $resource_ctrl;
+    private ilJupyterIRSSController $resource_ctrl;
     private ilJupyterSettings $settings;
 
 
@@ -27,7 +27,7 @@ class assJupyterGUI extends assQuestionGUI
         $this->newUnitId = null;
         $this->settings = ilJupyterSettings::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
-        $this->resource_ctrl = new ilJupyterResourceController();
+        $this->resource_ctrl = new ilJupyterIRSSController();
 
         if ($a_id >= 0) {
             $this->object->loadFromDb($a_id);
@@ -240,7 +240,7 @@ class assJupyterGUI extends assQuestionGUI
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
         $res_id = $this->resource_ctrl->storeJupyterResource(
             $jupyter_notebook_json,
-            ilJupyterResourceController::JUPYTER_QUESTION_RESOURCE
+            ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE
         );
         $jupyterQuestion->setJupyterExerciseResourceId($res_id);
 

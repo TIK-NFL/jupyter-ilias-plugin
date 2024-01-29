@@ -53,8 +53,8 @@ class assJupyterImport extends assQuestionImport
                             $this->object->setPoints($mattext->getContent());
                         } else if ($mattext->getLabel() == "jupyterExercise") {
                             $jupyterExercise = base64_decode($mattext->getContent());
-                            $res_id = (new ilJupyterResourceController())->storeJupyterResource(
-                                $jupyterExercise, ilJupyterResourceController::JUPYTER_QUESTION_RESOURCE
+                            $res_id = (new ilJupyterIRSSController())->storeJupyterResource(
+                                $jupyterExercise, ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE
                             );
                             $this->object->setJupyterExerciseResourceId($res_id);
                         } else if ($mattext->getLabel() == "jupyterUser") {
