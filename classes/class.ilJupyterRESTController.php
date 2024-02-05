@@ -238,6 +238,6 @@ class ilJupyterRESTController
     {
         $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
         ilLoggerFactory::getLogger('jupyter')->debug("Pushing local jupyter notebook '" . $jupyter_notebook_json_str . "' to " . $jupyter_notebook_url);
-        $this->execCurlRequest($jupyter_notebook_url, 'PUT', $user_token, $jupyter_notebook_json_str);
+        $this->execCurlRequest($jupyter_notebook_url, 'PUT', $user_token, $jupyter_notebook_json_str, true);
     }
 }

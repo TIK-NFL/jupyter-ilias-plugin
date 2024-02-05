@@ -2,6 +2,8 @@
 
 /* Copyright (c) 1998-2009 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+use exceptions\ilCurlErrorCodeException;
+
 include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
 
 /**
@@ -281,15 +283,19 @@ class assJupyterGUI extends assQuestionGUI
             }
         }
 
-        $this->object->pushLocalJupyterNotebook();
         $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame_form.html');
-        $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
         $atpl->setVariable('QUESTION_TEXT', $this->object->getQuestion());
 
-        $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
-
-        global $DIC;
-        $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
+        try {
+            global $DIC;
+            $this->object->pushLocalJupyterNotebook();
+            $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
+            $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
+            $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
+        } catch (ilCurlErrorCodeException | ilCurlConnectionException $e) {
+            ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
+            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('local_data_push_failed'));
+        }
 
         return $this->outQuestionPage("", $is_question_postponed, $active_id, $atpl->get());
     }

@@ -12,4 +12,5 @@ default_jupyter_notebook#:#Default Jupyter Notebook (JSON)
 test_config#:#Test configuration
 config_test_successful#:#Jupyterhub connection test successful
 config_test_failed#:#Jupyterhub connection test failed with the message:
-deletion_failed#:#Deletion test for stale jupyter sessions failed. Computing resources could not be released.
+deletion_failed#:#Deletion test for stale Jupyter sessions failed. Computing resources could not be released.
+local_data_push_failed#:#Failed to push local data to the Jupyter single user server.

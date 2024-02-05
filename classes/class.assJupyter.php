@@ -375,11 +375,16 @@ class assJupyter extends assQuestion
             $pass = ilObjTest::_getPass($active_id);
         }
 
-        // If a jupyter notebook is deleted on jupyterhub while being edited, an ilCurlErrorCodeException (404) will be produced on save.
-        // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
-        $jupyter_session = new ilJupyterSession($_POST['jupyter_user']);
-        $user_credentials = $jupyter_session->getUserCredentials();
-        $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
+        try {
+            $jupyter_session = new ilJupyterSession($_POST['jupyter_user']);
+            $user_credentials = $jupyter_session->getUserCredentials();
+            $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
+        } catch (ilCurlErrorCodeException $e) {
+            // If a jupyter notebook is deleted on jupyterhub while being edited, an ilCurlErrorCodeException (404) will be produced on save.
+            // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
+            ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
+            return false;
+        }
 
         $result = $ilDB->queryF(
                 'SELECT * FROM tst_solutions ' .
@@ -489,6 +494,11 @@ class assJupyter extends assQuestion
         $this->updateJupyterUserToken($this->getId(), $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
     }
 
+    /**
+     * @throws ilCurlConnectionException
+     * @throws ResourceNotFoundException
+     * @throws ilCurlErrorCodeException
+     */
     public function pushLocalJupyterNotebook()
     {
         $jupyter_session = new ilJupyterSession();
