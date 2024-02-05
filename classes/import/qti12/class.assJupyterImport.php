@@ -57,10 +57,6 @@ class assJupyterImport extends assQuestionImport
                                 $jupyterExercise, ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE
                             );
                             $this->object->setJupyterExerciseResourceId($res_id);
-                        } else if ($mattext->getLabel() == "jupyterUser") {
-                            $this->object->setJupyterUser($mattext->getContent());
-                        } else if ($mattext->getLabel() == "jupyterUserToken") {
-                            $this->object->setJupyterToken($mattext->getContent());
                         }
                     }
                 }
