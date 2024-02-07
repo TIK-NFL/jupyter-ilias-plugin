@@ -156,6 +156,11 @@ class ilJupyterRESTController
         return $response_http_code == 200;
     }
 
+    public function checkJupyterUserAndServer($user, $user_token): bool
+    {
+        return $this->checkJupyterUser($user) && $this->checkJupyterUserServer($user, $user_token);
+    }
+
     /**
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException

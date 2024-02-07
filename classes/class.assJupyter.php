@@ -22,6 +22,7 @@
 */
 
 use exceptions\ilCurlErrorCodeException;
+use exceptions\JupyterTransferException;
 use ILIAS\ResourceStorage\Resource\ResourceNotFoundException;
 
 include_once "./Modules/TestQuestionPool/classes/class.assQuestion.php";
@@ -377,9 +378,8 @@ class assJupyter extends assQuestion
 
         try {
             $jupyter_session = new ilJupyterSession($_POST['jupyter_user']);
-            $user_credentials = $jupyter_session->getUserCredentials();
-            $solution = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
-        } catch (ilCurlErrorCodeException $e) {
+            $solution = $this->pullRemoteJupyterNotebook($jupyter_session->getUserCredentials());
+        } catch (ilCurlConnectionException | ilCurlErrorCodeException | JupyterTransferException $e) {
             // If a jupyter notebook is deleted on jupyterhub while being edited, an ilCurlErrorCodeException (404) will be produced on save.
             // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
             ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
@@ -498,6 +498,7 @@ class assJupyter extends assQuestion
      * @throws ilCurlConnectionException
      * @throws ResourceNotFoundException
      * @throws ilCurlErrorCodeException
+     * @throws JupyterTransferException
      */
     public function pushLocalJupyterNotebook()
     {
@@ -506,7 +507,23 @@ class assJupyter extends assQuestion
         $this->jupyter_user = $jupyter_user_credentials['user'];
         $this->jupyter_token = $jupyter_user_credentials['token'];
         $jupyter_notebook_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
+
+        if (!$this->rest_ctrl->checkJupyterUserAndServer($this->jupyter_user, $this->jupyter_token)) {
+            throw new JupyterTransferException("Jupyter user is unset or the corresponding single user server is not running.");
+        }
         $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $this->jupyter_user, $this->jupyter_token);
+    }
+
+    /**
+     * @throws ilCurlConnectionException
+     * @throws JupyterTransferException
+     * @throws ilCurlErrorCodeException
+     */
+    public function pullRemoteJupyterNotebook($user_credentials) {
+        if (!$this->rest_ctrl->checkJupyterUserAndServer($user_credentials['user'], $user_credentials['token'])) {
+            throw new JupyterTransferException("Jupyter user is unset or the corresponding single user server is not running.");
+        }
+        return $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
     }
 
     /**

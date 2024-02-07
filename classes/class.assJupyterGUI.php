@@ -3,6 +3,7 @@
 /* Copyright (c) 1998-2009 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 use exceptions\ilCurlErrorCodeException;
+use exceptions\JupyterTransferException;
 
 include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
 
@@ -292,7 +293,7 @@ class assJupyterGUI extends assQuestionGUI
             $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
             $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
             $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
-        } catch (ilCurlErrorCodeException | ilCurlConnectionException $e) {
+        } catch (JupyterTransferException | ilCurlErrorCodeException | ilCurlConnectionException $e) {
             ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('local_data_push_failed'));
         }
