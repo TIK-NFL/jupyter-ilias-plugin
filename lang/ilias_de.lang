@@ -11,3 +11,6 @@ config_test_successful#:#Testverbindung zu Jupyterhub erfolgreich
 config_test_failed#:#Testverbindung zu Jupyterhub fehlgeschlagen mit der Nachricht:
 deletion_failed#:#Entfernen von veralteten Jupyter-Sitzungen fehlgeschlagen. Rechenressourcen konnten nicht freigegeben werden.
 local_data_push_failed#:#Bereitstellen lokaler Daten auf dem Jupyter Single-User-Server fehlgeschlagen.
+jupyter_view_mode#:#Anzeigemodus
+jupyter_view_mode_option_classic#:#Classic
+jupyter_view_mode_option_lab#:#JupyterLab

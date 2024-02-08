@@ -14,3 +14,6 @@ config_test_successful#:#Jupyterhub connection test successful
 config_test_failed#:#Jupyterhub connection test failed with the message:
 deletion_failed#:#Deletion test for stale Jupyter sessions failed. Computing resources could not be released.
 local_data_push_failed#:#Failed to push local data to the Jupyter single user server.
+jupyter_view_mode#:#View mode
+jupyter_view_mode_option_classic#:#Classic
+jupyter_view_mode_option_lab#:#JupyterLab

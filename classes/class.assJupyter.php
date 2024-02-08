@@ -42,6 +42,7 @@ class assJupyter extends assQuestion
     private $jupyter_token = '';
     private $jupyter_exercise_resource_id = '';
     private $jupyter_exercise_id = 0;
+    private $jupyter_view_mode = '';
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
 
@@ -118,6 +119,16 @@ class assJupyter extends assQuestion
         $this->jupyter_user = $jupyter_user;
     }
 
+    public function getJupyterViewMode(): string
+    {
+        return $this->jupyter_view_mode;
+    }
+
+    public function setJupyterViewMode(string $jupyter_view_mode): void
+    {
+        $this->jupyter_view_mode = $jupyter_view_mode;
+    }
+
 
     function isComplete(): bool
     {
@@ -141,7 +152,8 @@ class assJupyter extends assQuestion
 					'jupyter_user'	=> array('text', (string) $this->getJupyterUser()),
 					'jupyter_token'	=> array('text', (string) $this->getJupyterToken()),
 					'jupyter_exercise_res_id'	=> array('text', (string) $this->getJupyterExerciseResourceId()),
-					'jupyter_exercise_id'	=> array('integer', (string) $this->getJupyterExerciseId()),
+					'jupyter_exercise_id'	=> array('integer', (string) $this->getJupyterExerciseId()),  // TODO
+                    'jupyter_view_mode'	=> array('text', (string) $this->getJupyterViewMode()),
 				)
 		);
 
@@ -180,6 +192,7 @@ class assJupyter extends assQuestion
                 $this->setJupyterToken((string)$data['jupyter_token']);
                 $this->setJupyterExerciseResourceId((string)$data['jupyter_exercise_res_id']);
                 $this->setJupyterExerciseId((int)$data['jupyter_exercise_id']);
+                $this->setJupyterViewMode((string)$data['jupyter_view_mode']);
             }
         }
         parent::loadFromDb($question_id);

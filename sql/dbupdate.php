@@ -59,6 +59,13 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
                     'default'	=> 0,
                     'notnull'	=> true
                 ),
+            'jupyter_view_mode'	=>
+                array(
+                    'type'		=> 'text',
+                    'length'	=> 32,
+                    'default'	=> null,
+                    'notnull'	=> false
+                )
 		)
 	);
 

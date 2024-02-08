@@ -18,6 +18,7 @@ include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
  */
 class assJupyterGUI extends assQuestionGUI
 {
+    public static string $DEFAULT_VIEW_MODE = 'classic';
     private ilJupyterRESTController $rest_ctrl;
     private ilJupyterIRSSController $resource_ctrl;
     private ilJupyterSettings $settings;
@@ -133,6 +134,15 @@ class assJupyterGUI extends assQuestionGUI
         $points->setMinValue(0.0);
         $form->addItem($points);
 
+        // view mode
+        $viewMode = new ilRadioGroupInputGUI($this->lng->txt('jupyter_view_mode'), 'jupyter_view_mode');
+        $viewModeOptionClassic = new ilRadioOption($this->lng->txt('jupyter_view_mode_option_classic'), 'classic');
+        $viewModeOptionLab = new ilRadioOption($this->lng->txt('jupyter_view_mode_option_lab'), 'lab');
+        $viewMode->addOption($viewModeOptionClassic);
+        $viewMode->addOption($viewModeOptionLab);
+        $viewMode->setValue($this->object->getJupyterViewMode() ?: self::$DEFAULT_VIEW_MODE);
+        $form->addItem($viewMode);
+
         if ($this->object->getId()) {
             $hidden = new ilHiddenInputGUI("jupyter_question_id");
             $hidden->setValue($this->object->getId());
@@ -223,6 +233,7 @@ class assJupyterGUI extends assQuestionGUI
         $jupyterQuestion->setQuestion($form->getInput('question'));
         $jupyterQuestion->setPoints($form->getInput('points'));
         $jupyterQuestion->setId($form->getInput('jupyter_question_id'));
+        $jupyterQuestion->setJupyterViewMode($form->getInput('jupyter_view_mode'));
 
         $jupyter_session_id = $form->getInput('jupyter_session_id');
         $jupyterQuestion->setJupyterUser($jupyter_session_id);
@@ -264,7 +275,8 @@ class assJupyterGUI extends assQuestionGUI
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
         $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
-        $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
+        $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
+            $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
         return $preview;
@@ -291,7 +303,8 @@ class assJupyterGUI extends assQuestionGUI
             global $DIC;
             $this->object->pushLocalJupyterNotebook();
             $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
-            $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
+            $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
+                $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
             $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
         } catch (JupyterTransferException | ilCurlErrorCodeException | ilCurlConnectionException $e) {
             ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
@@ -337,7 +350,8 @@ class assJupyterGUI extends assQuestionGUI
         }
 
         $this->object->pushLocalJupyterNotebook();
-        $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() . '/notebooks/default.ipynb?token=' . $this->object->getJupyterToken());
+        $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
+            $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
 
         $qst_txt = $soltpl->get();
         $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", TRUE, TRUE, "Modules/TestQuestionPool");
@@ -349,6 +363,11 @@ class assJupyterGUI extends assQuestionGUI
         }
 
         return $solutionoutput;
+    }
+
+    private function getViewModeDependentPathSegment(): string
+    {
+        return $this->object->getJupyterViewMode() == 'lab' ? '/lab/tree' : '/notebooks';
     }
 
     public function getSpecificFeedbackOutput($userSolution): string
