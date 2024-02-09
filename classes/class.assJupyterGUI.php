@@ -187,6 +187,7 @@ class assJupyterGUI extends assQuestionGUI
 
         }
         $this->tpl->setVariable("QUESTION_DATA", $form->getHTML());
+        $this->tpl->setOnScreenMessage("info", $this->getPlugin()->txt('non_default_resources_ignored_note'));
     }
 
     public function save(): void

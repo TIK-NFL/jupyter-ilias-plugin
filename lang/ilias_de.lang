@@ -14,3 +14,4 @@ local_data_push_failed#:#Bereitstellen lokaler Daten auf dem Jupyter Single-User
 jupyter_view_mode#:#Anzeigemodus
 jupyter_view_mode_option_classic#:#Classic
 jupyter_view_mode_option_lab#:#JupyterLab
+non_default_resources_ignored_note#:#Notiz: Ressourcen außerhalb des Einstiegspunkts 'default.ipynb' werden bei der Speicherung ignoriert.

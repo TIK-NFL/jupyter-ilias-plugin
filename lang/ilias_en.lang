@@ -17,3 +17,4 @@ local_data_push_failed#:#Failed to push local data to the Jupyter single user se
 jupyter_view_mode#:#View mode
 jupyter_view_mode_option_classic#:#Classic
 jupyter_view_mode_option_lab#:#JupyterLab
+non_default_resources_ignored_note#:#Note: Resources besides the main entry point 'default.ipynb' will be ignored on save.
