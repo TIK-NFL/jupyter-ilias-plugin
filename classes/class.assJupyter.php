@@ -152,7 +152,7 @@ class assJupyter extends assQuestion
 					'jupyter_user'	=> array('text', (string) $this->getJupyterUser()),
 					'jupyter_token'	=> array('text', (string) $this->getJupyterToken()),
 					'jupyter_exercise_res_id'	=> array('text', (string) $this->getJupyterExerciseResourceId()),
-					'jupyter_exercise_id'	=> array('integer', (string) $this->getJupyterExerciseId()),  // TODO
+					'jupyter_exercise_id'	=> array('integer', (int) $this->getJupyterExerciseId()),
                     'jupyter_view_mode'	=> array('text', (string) $this->getJupyterViewMode()),
 				)
 		);
@@ -459,11 +459,7 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * Synchronizes the Jupyter (open notebooks) between the Jupyterhub and ILIAS.
-     *
-     * TODO: Refine ilCurlErrorCodeException handling (case: $jupyter_user && !$jupyter_session_set).
-     * TODO: For now, assume that the jupyter notebook has been cleaned up on jupyterhub (not during an ILIAS session).
-     * TODO: $jupyter_session_set might be false for other reasons, e.g., single user server failure.
+     * Synchronizes the local Jupyter notebook between Jupyterhub and ILIAS.
      *
      * @throws JsonException
      * @throws ilCurlConnectionException
@@ -579,6 +575,7 @@ class assJupyter extends assQuestion
         while ($data = $ilDB->fetchAssoc($result)) {
             $rid = $data['resource_id'];
             try {
+                ilLoggerFactory::getLogger('jupyter')->info("Cleaning up stale solution resource with ID '" . $rid . "'");
                 $this->resource_ctrl->deleteJupyterResource($rid);
             } catch (ResourceNotFoundException $rnfe) {
                 // do nothing.
@@ -614,7 +611,6 @@ class assJupyter extends assQuestion
             ilLoggerFactory::getLogger('jupyter')->error("Failed to clean up stale jupyter notebooks due to asynchronous clocks between the local system and jupyterhub.");
             return;
         }
-
 
         //
         // Cleanup of temporary jupyter users only created by this ILIAS instance.
@@ -785,19 +781,6 @@ class assJupyter extends assQuestion
         return array();
     }
 
-    /**
-     * Deletes the jupyter notebook on jupyterhub.
-     * Not implemented, since cleanups are handled by JupyterCleanupCron nevertheless.
-     *
-     * @param int $a_sent_id
-     */
-    public function deleteServerSideJupyterNotebook(int $a_sent_id = 0)
-    {
-        $exc_id = $a_sent_id ? $a_sent_id : $this->getJupyterExerciseId();
-        if ($exc_id) {
-            return;
-        }
-    }
 
 
     /**

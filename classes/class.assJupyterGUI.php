@@ -222,7 +222,7 @@ class assJupyterGUI extends assQuestionGUI
      * @param ilPropertyFormGUI $form
      * @return true
      * @throws JsonException
-     * @throws \exceptions\ilCurlErrorCodeException
+     * @throws ilCurlErrorCodeException
      * @throws ilCurlConnectionException
      */
     public function writeJupyterQuestionFromForm(ilPropertyFormGUI $form)
