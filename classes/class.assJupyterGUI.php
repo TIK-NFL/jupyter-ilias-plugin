@@ -135,9 +135,9 @@ class assJupyterGUI extends assQuestionGUI
         $form->addItem($points);
 
         // view mode
-        $viewMode = new ilRadioGroupInputGUI($this->lng->txt('jupyter_view_mode'), 'jupyter_view_mode');
-        $viewModeOptionClassic = new ilRadioOption($this->lng->txt('jupyter_view_mode_option_classic'), 'classic');
-        $viewModeOptionLab = new ilRadioOption($this->lng->txt('jupyter_view_mode_option_lab'), 'lab');
+        $viewMode = new ilRadioGroupInputGUI($this->getPlugin()->txt('jupyter_view_mode'), 'jupyter_view_mode');
+        $viewModeOptionClassic = new ilRadioOption($this->getPlugin()->txt('jupyter_view_mode_option_classic'), 'classic');
+        $viewModeOptionLab = new ilRadioOption($this->getPlugin()->txt('jupyter_view_mode_option_lab'), 'lab');
         $viewMode->addOption($viewModeOptionClassic);
         $viewMode->addOption($viewModeOptionLab);
         $viewMode->setValue($this->object->getJupyterViewMode() ?: self::$DEFAULT_VIEW_MODE);
@@ -308,7 +308,7 @@ class assJupyterGUI extends assQuestionGUI
             $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
         } catch (JupyterTransferException | ilCurlErrorCodeException | ilCurlConnectionException $e) {
             ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('local_data_push_failed'));
+            $this->tpl->setOnScreenMessage('failure', $this->getPlugin()->txt('local_data_push_failed'));
         }
 
         return $this->outQuestionPage("", $is_question_postponed, $active_id, $atpl->get());
