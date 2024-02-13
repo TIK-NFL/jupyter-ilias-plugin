@@ -278,6 +278,7 @@ class assJupyterGUI extends assQuestionGUI
         $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
         $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
             $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
+        $template->setVariable('PROXY_URL', $this->settings->getProxyUrl());
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
         return $preview;
@@ -306,6 +307,7 @@ class assJupyterGUI extends assQuestionGUI
             $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
             $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
                 $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
+            $atpl->setVariable('PROXY_URL', $this->settings->getProxyUrl());
             $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
         } catch (JupyterTransferException | ilCurlErrorCodeException | ilCurlConnectionException $e) {
             ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
@@ -353,6 +355,7 @@ class assJupyterGUI extends assQuestionGUI
         $this->object->pushLocalJupyterNotebook();
         $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
             $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
+        $soltpl->setVariable('PROXY_URL', $this->settings->getProxyUrl());
 
         $qst_txt = $soltpl->get();
         $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", TRUE, TRUE, "Modules/TestQuestionPool");

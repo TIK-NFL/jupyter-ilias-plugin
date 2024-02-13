@@ -5,7 +5,7 @@
 <script>
     function onJupyterFrameLoad(window) {
         window.addEventListener('beforeunload', function (event) {
-            window.Jupyter.notebook.save_notebook();
+            window.postMessage("save", "{PROXY_URL}");
             // Jupyter notebooks loaded in previews are disposable, thus no need to propagate unload events, which
             // for example are causing confirmation popups for unsaved changes.
             event.stopImmediatePropagation();
