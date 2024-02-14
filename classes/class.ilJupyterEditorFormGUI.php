@@ -50,6 +50,7 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
         $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_frame.html', TRUE, TRUE);
         $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/lab?token=' . $this->jupyter_user_credentials['token']);
         $applet->setVariable('PROXY_URL', $settings->getProxyUrl());
+        $applet->setVariable("INFO", $this->jupyterQuestion->getPlugin()->txt('non_default_resources_ignored_note'));
         return $applet->get();
     }
 
