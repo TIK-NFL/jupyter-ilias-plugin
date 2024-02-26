@@ -242,21 +242,18 @@ class assJupyterGUI extends assQuestionGUI
         $user_credentials = $jupyter_session->getUserCredentials();
         $jupyterQuestion->setJupyterToken($user_credentials['token']);
 
-        // If existent, clean up previously saved jupyter resource.
-        $old_res_id = $jupyterQuestion->getJupyterExerciseResourceId();
-        if ($old_res_id) {
-            $this->resource_ctrl->deleteJupyterResource($old_res_id);
-        }
-
         // When the notebook is deleted on jupyterhub while editing, ilCurlErrorCodeException (404) will be thrown.
         // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed,
         // which should by session length definition never be the case.
         $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
-        $res_id = $this->resource_ctrl->storeJupyterResource(
-            $jupyter_notebook_json,
-            ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE
-        );
-        $jupyterQuestion->setJupyterExerciseResourceId($res_id);
+
+        $new_res_id = $this->resource_ctrl->storeJupyterResource($jupyter_notebook_json, ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE);
+        $old_res_id = $jupyterQuestion->getJupyterExerciseResourceId();
+        if ($old_res_id && $this->resource_ctrl->jupyterResourceExists($old_res_id)) {
+            // If existent, clean up previously saved jupyter resource.
+            $this->resource_ctrl->deleteJupyterResource($old_res_id);
+        }
+        $jupyterQuestion->setJupyterExerciseResourceId($new_res_id);
 
         return true;
     }

@@ -75,4 +75,9 @@ class ilJupyterIRSSController
         throw new ResourceNotFoundException("Could not find the resource with the id '" . $resource_id . "'." );
     }
 
+    public function jupyterResourceExists(string $resource_id): bool
+    {
+        return $this->resourceStorage->manage()->find($resource_id) !== null;
+    }
+
 }
