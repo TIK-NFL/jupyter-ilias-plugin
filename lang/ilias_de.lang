@@ -5,13 +5,13 @@ form_tab_settings_activate#:#Fragen-Plugin aktivieren
 editor#:#Fragen-Editor
 jupyterhub_api_path#:#Jupyterhub API-Pfad
 form_tab_settings_loglevel#:#Log-Level
-default_jupyter_notebook#:#Voreingestelltes Jupyter-Notebook (JSON)
+default_jupyter_project#:#Voreingestelltes Jupyter-Projekt (JSON)
 test_config#:#Konfiguration testen
 config_test_successful#:#Testverbindung zu Jupyterhub erfolgreich
 config_test_failed#:#Testverbindung zu Jupyterhub fehlgeschlagen mit der Nachricht:
 deletion_failed#:#Entfernen von veralteten Jupyter-Sitzungen fehlgeschlagen. Rechenressourcen konnten nicht freigegeben werden.
 local_data_push_failed#:#Bereitstellen lokaler Daten auf dem Jupyter Single-User-Server fehlgeschlagen.
 jupyter_view_mode#:#Anzeigemodus
-jupyter_view_mode_option_classic#:#Classic
+jupyter_view_mode_option_classic#:#Classic Notebook
 jupyter_view_mode_option_lab#:#JupyterLab
-non_default_resources_ignored_note#:#Notiz: Ressourcen außerhalb des Einstiegspunkts 'default.ipynb' werden bei der Speicherung ignoriert.
+loading_time_warning#:#Warnung: Größere Dateien (z.B. Rohdateien) können die Ladezeit für diese Frage erhöhen.

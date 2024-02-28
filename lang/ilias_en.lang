@@ -8,13 +8,13 @@ proxy_url#:#Proxy URL
 jupyterhub_server_url#:#Jupyterhub server URL
 jupyterhub_api_path#:#Jupyterhub API path
 api_token#:#API token
-default_jupyter_notebook#:#Default Jupyter Notebook (JSON)
+default_jupyter_project#:#Default Jupyter Project (JSON)
 test_config#:#Test configuration
 config_test_successful#:#Jupyterhub connection test successful
 config_test_failed#:#Jupyterhub connection test failed with the message:
 deletion_failed#:#Deletion test for stale Jupyter sessions failed. Computing resources could not be released.
 local_data_push_failed#:#Failed to push local data to the Jupyter single user server.
 jupyter_view_mode#:#View mode
-jupyter_view_mode_option_classic#:#Classic
+jupyter_view_mode_option_classic#:#Classic Notebook
 jupyter_view_mode_option_lab#:#JupyterLab
-non_default_resources_ignored_note#:#Note: Resources besides the main entry point 'default.ipynb' will be ignored on save.
+loading_time_warning#:#Warning: Larger files (e.g., raw files) can increase the loading time for this question.

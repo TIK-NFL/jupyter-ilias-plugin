@@ -83,10 +83,10 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $api_token->setValue($settings->getApiToken());
         $form->addItem($api_token);
 
-        // Default jupyter notebook
-        $default_jupyter_notebook = new ilTextAreaInputGUI($this->getPluginObject()->txt('default_jupyter_notebook'), 'default_jupyter_notebook');
-        $default_jupyter_notebook->setValue($settings->getDefaultJupyterNotebook() ?: '');
-        $form->addItem($default_jupyter_notebook);
+        // Default jupyter project
+        $default_jupyter_project = new ilTextAreaInputGUI($this->getPluginObject()->txt('default_jupyter_project'), 'default_jupyter_project');
+        $default_jupyter_project->setValue($settings->getDefaultJupyterProject() ?: '');
+        $form->addItem($default_jupyter_project);
 
         $form->addCommandButton('save', $GLOBALS['lng']->txt('save'));
         $form->addCommandButton('test', $this->getPluginObject()->txt('test_config'));
@@ -107,7 +107,7 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
             $settings->setJupyterhubServerUrl($form->getInput('jupyterhub_server_url'));
             $settings->setJupyterhubApiPath($form->getInput('jupyterhub_api_path'));
             $settings->setApiToken($form->getInput('api_token'));
-            $settings->setDefaultJupyterNotebook($form->getInput('default_jupyter_notebook'));
+            $settings->setDefaultJupyterProject($form->getInput('default_jupyter_project'));
 
             $settings->update();
 
@@ -126,8 +126,8 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $settings = ilJupyterSettings::getInstance();
         $assJupyter = new assJupyter();
         try {
-            $jupyter_user_credentials = $assJupyter->pushTemporaryJupyterNotebook($settings->getDefaultJupyterNotebook());
-            if ($assJupyter->deleteTemporaryJupyterNotebook($jupyter_user_credentials['user'])) {
+            $jupyter_user_credentials = $assJupyter->pushTemporaryJupyterProject($settings->getDefaultJupyterProject());
+            if ($assJupyter->deleteTemporaryJupyterProject($jupyter_user_credentials['user'])) {
                 $this->tpl->setOnScreenMessage('success', $this->getPluginObject()->txt('config_test_successful'), true);
             } else {
                 $this->tpl->setOnScreenMessage('failure', $this->getPluginObject()->txt('config_test_failed') . " " .

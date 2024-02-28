@@ -391,9 +391,9 @@ class assJupyter extends assQuestion
 
         try {
             $jupyter_session = new ilJupyterSession($_POST['jupyter_user']);
-            $solution = $this->pullRemoteJupyterNotebook($jupyter_session->getUserCredentials());
+            $solution = $this->pullRemoteJupyterProject($jupyter_session->getUserCredentials());
         } catch (ilCurlConnectionException | ilCurlErrorCodeException | JupyterTransferException $e) {
-            // If a jupyter notebook is deleted on jupyterhub while being edited, an ilCurlErrorCodeException (404) will be produced on save.
+            // If a jupyter project is deleted on jupyterhub while being edited, an ilCurlErrorCodeException (404) will be produced on save.
             // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed, which should by session length definition never be the case.
             ilLoggerFactory::getLogger('jupyter')->error($e->getMessage());
             return false;
@@ -459,7 +459,7 @@ class assJupyter extends assQuestion
     }
 
     /**
-     * Synchronizes the local Jupyter notebook between Jupyterhub and ILIAS.
+     * Synchronizes the local Jupyter project between Jupyterhub and ILIAS.
      *
      * @throws JsonException
      * @throws ilCurlConnectionException
@@ -472,28 +472,28 @@ class assJupyter extends assQuestion
         $jupyter_session_set = ilJupyterSession::isSessionSet($jupyter_user);
 
         if ($jupyter_user && $jupyter_session_set) {
-            // A jupyter session was set before and is still active. Thus, reuse the existing jupyter-notebook from jupyterhub.
+            // A jupyter session was set before and is still active. Thus, reuse the existing jupyter project from jupyterhub.
             $jupyter_session = new ilJupyterSession($jupyter_user);
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
 
         } else if ($jupyter_user && !$jupyter_session_set) {
-            // Jupyter session is no longer active, thus create a new session and push the notebook stored in the local database.
+            // Jupyter session is no longer active, thus create a new session and push the project stored locally.
             $jupyter_session = new ilJupyterSession();
-            $jupyter_notebook_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
+            $jupyter_project_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-            $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
-            ilLoggerFactory::getLogger('jupyter')->debug("Jupyter notebook for user '" . $jupyter_user . "' not available on jupyterhub. New jupyter session created.");
+            $this->rest_ctrl->pushJupyterProject($jupyter_project_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
+            ilLoggerFactory::getLogger('jupyter')->debug("Jupyter project for user '" . $jupyter_user . "' not available on jupyterhub. New jupyter session created.");
 
         } else {
             // A jupyter session was not set before, thus create a new one.
             $jupyter_session = new ilJupyterSession();
             $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-            $this->rest_ctrl->pushJupyterNotebook(
-                $this->jupyter_settings->getDefaultJupyterNotebook(),
+            $this->rest_ctrl->pushJupyterProject(
+                $this->jupyter_settings->getDefaultJupyterProject(),
                 $jupyter_user_credentials['user'],
                 $jupyter_user_credentials['token']
             );
-            ilLoggerFactory::getLogger('jupyter')->debug("New jupyter session and a default jupyter notebook created for user '" . $jupyter_user_credentials['user'] . "'.");
+            ilLoggerFactory::getLogger('jupyter')->debug("New jupyter session and default jupyter project created for user '" . $jupyter_user_credentials['user'] . "'.");
         }
 
         $this->setJupyterUser($jupyter_user_credentials['user']);
@@ -508,51 +508,53 @@ class assJupyter extends assQuestion
      * @throws ResourceNotFoundException
      * @throws ilCurlErrorCodeException
      * @throws JupyterTransferException
+     * @throws JsonException
      */
-    public function pushLocalJupyterNotebook()
+    public function pushLocalJupyterProject()
     {
         $jupyter_session = new ilJupyterSession();
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
         $this->jupyter_user = $jupyter_user_credentials['user'];
         $this->jupyter_token = $jupyter_user_credentials['token'];
-        $jupyter_notebook_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
+        $jupyter_project_json = $this->resource_ctrl->readJupyterResource($this->getJupyterExerciseResourceId());
 
         if (!$this->rest_ctrl->checkJupyterUserAndServer($this->jupyter_user, $this->jupyter_token)) {
             throw new JupyterTransferException("Jupyter user is unset or the corresponding single user server is not running.");
         }
-        $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $this->jupyter_user, $this->jupyter_token);
+        $this->rest_ctrl->pushJupyterProject($jupyter_project_json, $this->jupyter_user, $this->jupyter_token);
     }
 
     /**
      * @throws ilCurlConnectionException
      * @throws JupyterTransferException
      * @throws ilCurlErrorCodeException
+     * @throws JsonException
      */
-    public function pullRemoteJupyterNotebook($user_credentials) {
+    public function pullRemoteJupyterProject($user_credentials) {
         if (!$this->rest_ctrl->checkJupyterUserAndServer($user_credentials['user'], $user_credentials['token'])) {
             throw new JupyterTransferException("Jupyter user is unset or the corresponding single user server is not running.");
         }
-        return $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
+        return $this->rest_ctrl->pullJupyterProject($user_credentials['user'], $user_credentials['token']);
     }
 
     /**
      * @throws ilCurlConnectionException
      * @throws ilCurlErrorCodeException
      */
-    public function deleteTemporaryJupyterNotebook($jupyter_user): bool
+    public function deleteTemporaryJupyterProject($jupyter_user): bool
     {
         return $this->rest_ctrl->deleteJupyterUser($jupyter_user, $this->jupyter_settings->getApiToken());
     }
 
     /**
-     * @param $jupyter_notebook_json
+     * @param $jupyter_project_json
      * @return array
      */
-    public function pushTemporaryJupyterNotebook($jupyter_notebook_json)
+    public function pushTemporaryJupyterProject($jupyter_project_json)
     {
         $jupyter_session = new ilJupyterSession();
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
-        $this->rest_ctrl->pushJupyterNotebook($jupyter_notebook_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
+        $this->rest_ctrl->pushJupyterProject($jupyter_project_json, $jupyter_user_credentials['user'], $jupyter_user_credentials['token']);
         return $jupyter_user_credentials;
     }
 
@@ -591,7 +593,7 @@ class assJupyter extends assQuestion
      * @throws JsonException
      * @throws ilCurlErrorCodeException
      */
-    public function cleanUpStaleJupyterNotebooks()
+    public function cleanUpStaleJupyterProjects()
     {
         // TODO: Adjust values and extract ILIAS settings
         $max_age_sec = 60;
@@ -600,15 +602,15 @@ class assJupyter extends assQuestion
         //
         // Check the clock synchronization between localhost and jupyterhub.
         //
-        $jupyter_user_credentials = $this->pushTemporaryJupyterNotebook($this->jupyter_settings->getDefaultJupyterNotebook());
-        $metadata = $this->rest_ctrl->pullJupyterNotebookMetaData($jupyter_user_credentials['user'], $this->jupyter_settings->getApiToken());
+        $jupyter_user_credentials = $this->pushTemporaryJupyterProject($this->jupyter_settings->getDefaultJupyterProject());
+        $metadata = $this->rest_ctrl->pullJupyterProjectMetaData($jupyter_user_credentials['user'], $this->jupyter_settings->getApiToken());
         $time_current = time();
         $time_created = $metadata['created'];
         $this->rest_ctrl->deleteJupyterUser($jupyter_user_credentials['user'], $this->jupyter_settings->getApiToken());
         $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user_credentials['user']);
 
         if ($time_current > $time_created + $max_sync_deviation_sec || $time_current < $time_created - $max_sync_deviation_sec) {
-            ilLoggerFactory::getLogger('jupyter')->error("Failed to clean up stale jupyter notebooks due to asynchronous clocks between the local system and jupyterhub.");
+            ilLoggerFactory::getLogger('jupyter')->error("Failed to clean up stale jupyter projects due to asynchronous clocks between the local system and jupyterhub.");
             return;
         }
 
@@ -619,11 +621,11 @@ class assJupyter extends assQuestion
         $jupyter_session_records = $this->db_ctrl->getTemporarySessionRecords();
         foreach ($jupyter_session_records as $record) {
             $jupyter_user = $record['jupyter_user'];
-            $metadata = $this->rest_ctrl->pullJupyterNotebookMetaData($jupyter_user, $this->jupyter_settings->getApiToken());
+            $metadata = $this->rest_ctrl->pullJupyterProjectMetaData($jupyter_user, $this->jupyter_settings->getApiToken());
             if (!$metadata) {
                 ilLoggerFactory::getLogger('jupyter')->warning("Cleanup: Jupyter user '" . $jupyter_user . "' is present without the default jupyter notebook file. Failed to gather default notebook metadata.");
                 // Delete the session DB record nevertheless, i.e., give up deleting this user on jupyterhub,
-                // since no metadata is available to calculate the cleanup time of a jupyter notebook.
+                // since no metadata is available to calculate the cleanup time of a jupyter project.
                 $this->db_ctrl->deleteTemporarySessionRecord($jupyter_user);
                 continue;
             }

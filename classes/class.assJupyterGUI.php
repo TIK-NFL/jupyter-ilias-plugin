@@ -242,12 +242,12 @@ class assJupyterGUI extends assQuestionGUI
         $user_credentials = $jupyter_session->getUserCredentials();
         $jupyterQuestion->setJupyterToken($user_credentials['token']);
 
-        // When the notebook is deleted on jupyterhub while editing, ilCurlErrorCodeException (404) will be thrown.
+        // When the project is deleted on jupyterhub while editing, ilCurlErrorCodeException (404) will be thrown.
         // This means, that the jupyterhub session was cleaned up before the ILIAS session was closed,
         // which should by session length definition never be the case.
-        $jupyter_notebook_json = $this->rest_ctrl->pullJupyterNotebook($user_credentials['user'], $user_credentials['token']);
+        $jupyter_project_json = $this->rest_ctrl->pullJupyterProject($user_credentials['user'], $user_credentials['token']);
 
-        $new_res_id = $this->resource_ctrl->storeJupyterResource($jupyter_notebook_json, ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE);
+        $new_res_id = $this->resource_ctrl->storeJupyterResource($jupyter_project_json, ilJupyterIRSSController::JUPYTER_QUESTION_RESOURCE);
         $old_res_id = $jupyterQuestion->getJupyterExerciseResourceId();
         if ($old_res_id && $this->resource_ctrl->jupyterResourceExists($old_res_id)) {
             // If existent, clean up previously saved jupyter resource.
@@ -267,7 +267,7 @@ class assJupyterGUI extends assQuestionGUI
     {
         global $DIC;
         $tpl = $DIC->ui()->mainTemplate();
-        $this->object->pushLocalJupyterNotebook();
+        $this->object->pushLocalJupyterProject();
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
@@ -299,7 +299,7 @@ class assJupyterGUI extends assQuestionGUI
 
         try {
             global $DIC;
-            $this->object->pushLocalJupyterNotebook();
+            $this->object->pushLocalJupyterProject();
             $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
             $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
                 $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
@@ -344,11 +344,11 @@ class assJupyterGUI extends assQuestionGUI
             foreach ($solutions as $idx => $solution_value) {
                 $solution_res_id = $solution_value["value2"];
                 $this->object->setJupyterExerciseResourceId($solution_res_id);
-                // TODO: A jupyter session might be reused to improve efficiency, since larger notebooks are repeatedly pushed to jupyterhub on every solution review.
+                // TODO: A jupyter session might be reused to improve efficiency, since larger projects are repeatedly pushed to jupyterhub on every solution review.
             }
         }
 
-        $this->object->pushLocalJupyterNotebook();
+        $this->object->pushLocalJupyterProject();
         $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
             $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
         $soltpl->setVariable('PROXY_URL', $this->settings->getProxyUrl());

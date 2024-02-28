@@ -19,7 +19,7 @@ class ilJupyterSettings
 
     private string $api_token;
 
-    private string $default_jupyter_notebook;
+    private string $default_jupyter_project;
 
 
     /**
@@ -39,7 +39,7 @@ class ilJupyterSettings
         $this->jupyterhub_server_url = $this->getStorage()->get('jupyterhub_server_url', '');
         $this->jupyterhub_api_path = $this->getStorage()->get('jupyterhub_api_path', '');
         $this->api_token = $this->getStorage()->get('api_token', '');
-        $this->default_jupyter_notebook = $this->getStorage()->get('default_jupyter_notebook', '');
+        $this->default_jupyter_project = $this->getStorage()->get('default_jupyter_project', '');
     }
 
     protected function getStorage(): ?ilSetting
@@ -110,14 +110,14 @@ class ilJupyterSettings
         $this->api_token = $api_token;
     }
 
-    public function getDefaultJupyterNotebook(): string
+    public function getDefaultJupyterProject(): string
     {
-        return $this->default_jupyter_notebook;
+        return $this->default_jupyter_project;
     }
 
-    public function setDefaultJupyterNotebook($default_jupyter_notebook): void
+    public function setDefaultJupyterProject($default_jupyter_project): void
     {
-        $this->default_jupyter_notebook = $default_jupyter_notebook;
+        $this->default_jupyter_project = $default_jupyter_project;
     }
 
     public function update()
@@ -127,6 +127,6 @@ class ilJupyterSettings
         $this->getStorage()->set('jupyterhub_server_url', (string)$this->jupyterhub_server_url);
         $this->getStorage()->set('jupyterhub_api_path', (string)$this->jupyterhub_api_path);
         $this->getStorage()->set('api_token', (string)$this->api_token);
-        $this->getStorage()->set('default_jupyter_notebook', (string)$this->default_jupyter_notebook);
+        $this->getStorage()->set('default_jupyter_project', (string)$this->default_jupyter_project);
     }
 }
