@@ -74,33 +74,39 @@ systemctl restart apache.service
 2. On the  assJupyter  entry, click:  **Actions  →  Configure**.
 3. Refer to the following table:
     
-|                        Property | Description                                                        | Example value                                       |
-|--------------------------------:|--------------------------------------------------------------------|-----------------------------------------------------|
-|                       Log-Level | Webserver logging level                                            | DEBUG                                               |
-|                       Proxy URL | URL to the local ILIAS webserver providing the ProxyPass           | `https://127.0.0.1/jupyter`                         |
-|           Jupyterhub server URL | URL to the Jupyterhub installation including the REST API server   | `https://jupyterhub.example-university.edu/jupyter` |
-|                       API token | API token for the REST server access                               | `my-api-token`                                      |
-| Default Jupyter Notebook (JSON) | JSON of the initial jupyter notebook (keep as general as possible) | (see below)                                         |
+|                       Property | Description                                                       | Example value                                       |
+|-------------------------------:|-------------------------------------------------------------------|-----------------------------------------------------|
+|                      Log-Level | Webserver logging level                                           | DEBUG                                               |
+|                      Proxy URL | URL to the local ILIAS webserver providing the ProxyPass          | `https://127.0.0.1/jupyter`                         |
+|          Jupyterhub server URL | URL to the Jupyterhub installation including the REST API server  | `https://jupyterhub.example-university.edu/jupyter` |
+|                      API token | API token for the REST server access                              | `my-api-token`                                      |
+| Default Jupyter Project (JSON) | JSON of the initial jupyter project (keep as general as possible) | (see below)                                         |
 
-- Example for default jupyter notebook (JSON)
-   ```
-   {
-     "content": {
-       "cells": [ ],
-       "metadata": {
-         "kernelspec": {
-           "display_name": "Python 3 (ipykernel)",
-           "language": "python",
-           "name": "python3"
-         }
-       },
-       "nbformat": 4,
-       "nbformat_minor": 5
-     },
-     "format": "json",
-     "type": "notebook"
-   }
-   ```
+- Example for default jupyter project containing one notebook (JSON)
+    ```
+    {
+      "jupyter_project": [
+        {
+          "name": "main.ipynb",
+          "path": "main.ipynb",
+          "content": {
+            "cells": [],
+            "metadata": {
+              "kernelspec": {
+                "display_name": "Python 3 (ipykernel)",
+                "language": "python",
+                "name": "python3"
+              }
+            },
+            "nbformat": 4,
+            "nbformat_minor": 5
+          },
+          "format": "json",
+          "type": "notebook"
+        }
+      ]
+    }
+    ```
 4. **Save** and optionally **test** the configuration. Note that the configuration test requires changes to be saved before.
 
 #### Integration (optional)
