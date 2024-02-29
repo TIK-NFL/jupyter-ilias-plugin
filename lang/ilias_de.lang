@@ -3,9 +3,12 @@ tab_settings#:#Jupyter-Einstellungen
 form_tab_settings#:#Einstellungen zum Jupyter-Fragen Plugin
 form_tab_settings_activate#:#Fragen-Plugin aktivieren
 editor#:#Fragen-Editor
-jupyterhub_api_path#:#Jupyterhub API-Pfad
 form_tab_settings_loglevel#:#Log-Level
-default_jupyter_project#:#Voreingestelltes Jupyter-Projekt (JSON)
+proxy_url#:#Proxy URL
+jupyterhub_server_url#:#Jupyterhub Server URL
+jupyterhub_api_path#:#Jupyterhub API-Pfad
+api_token#:#API-Token
+default_jupyter_project#:#Default Jupyter Project (JSON)
 test_config#:#Konfiguration testen
 config_test_successful#:#Testverbindung zu Jupyterhub erfolgreich
 config_test_failed#:#Testverbindung zu Jupyterhub fehlgeschlagen mit der Nachricht:
