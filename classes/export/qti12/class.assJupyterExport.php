@@ -87,6 +87,7 @@ class assJupyterExport extends assQuestionExport
         $jupyterExerciseEncoded = base64_encode(
             (new ilJupyterIRSSController())->readJupyterResource($this->object->getJupyterExerciseResourceId())
         );
+        $a_xml_writer->xmlElement("mattext", ["label" => "entryFilePath"], $this->object->getEntryFilePath());
         $a_xml_writer->xmlElement("mattext", ["label" => "jupyterExercise"], $jupyterExerciseEncoded);
 
         $a_xml_writer->xmlEndTag("material");

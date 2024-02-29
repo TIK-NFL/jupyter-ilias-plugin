@@ -65,6 +65,13 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter')) {
                     'length'	=> 32,
                     'default'	=> null,
                     'notnull'	=> false
+                ),
+            'entry_file_path'	=>
+                array(
+                    'type'		=> 'text',
+                    'length'	=> 512,
+                    'default'	=> null,
+                    'notnull'	=> false
                 )
 		)
 	);

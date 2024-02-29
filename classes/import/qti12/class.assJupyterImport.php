@@ -59,6 +59,8 @@ class assJupyterImport extends assQuestionImport
                             $this->object->setJupyterExerciseResourceId($res_id);
                         } else if ($mattext->getLabel() == "jupyterViewMode") {
                             $this->object->setJupyterViewMode($mattext->getContent());
+                        } else if ($mattext->getLabel() == "entryFilePath") {
+                            $this->object->setEntryFilePath($mattext->getContent());
                         }
                     }
                 }

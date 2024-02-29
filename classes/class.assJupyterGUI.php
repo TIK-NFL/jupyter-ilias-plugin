@@ -19,6 +19,7 @@ include_once './Modules/TestQuestionPool/classes/class.assQuestionGUI.php';
 class assJupyterGUI extends assQuestionGUI
 {
     public static string $DEFAULT_VIEW_MODE = 'classic';
+    public static string $DEFAULT_ENTRY_FILE_PATH = 'main.ipynb';
     private ilJupyterRESTController $rest_ctrl;
     private ilJupyterIRSSController $resource_ctrl;
     private ilJupyterSettings $settings;
@@ -134,6 +135,12 @@ class assJupyterGUI extends assQuestionGUI
         $points->setMinValue(0.0);
         $form->addItem($points);
 
+        // entry file path
+        $entryFilePath = new ilTextInputGUI($this->getPlugin()->txt('entry_file_path'), 'entry_file_path');
+        $entryFilePath->setValue($this->object->getEntryFilePath() ?: self::$DEFAULT_ENTRY_FILE_PATH);
+        $entryFilePath->setRequired(true);
+        $form->addItem($entryFilePath);
+
         // view mode
         $viewMode = new ilRadioGroupInputGUI($this->getPlugin()->txt('jupyter_view_mode'), 'jupyter_view_mode');
         $viewModeOptionClassic = new ilRadioOption($this->getPlugin()->txt('jupyter_view_mode_option_classic'), 'classic');
@@ -234,6 +241,7 @@ class assJupyterGUI extends assQuestionGUI
         $jupyterQuestion->setPoints($form->getInput('points'));
         $jupyterQuestion->setId($form->getInput('jupyter_question_id'));
         $jupyterQuestion->setJupyterViewMode($form->getInput('jupyter_view_mode'));
+        $jupyterQuestion->setEntryFilePath($form->getInput('entry_file_path'));
 
         $jupyter_session_id = $form->getInput('jupyter_session_id');
         $jupyterQuestion->setJupyterUser($jupyter_session_id);
@@ -273,7 +281,7 @@ class assJupyterGUI extends assQuestionGUI
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
         $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
         $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
-            $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
+            $this->getViewModeDependentPathSegment() . '/' . $this->object->getEntryFilePath() . '?token=' . $this->object->getJupyterToken());
         $template->setVariable('PROXY_URL', $this->settings->getProxyUrl());
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
@@ -302,7 +310,7 @@ class assJupyterGUI extends assQuestionGUI
             $this->object->pushLocalJupyterProject();
             $atpl->setVariable('JUPYTER_USER', $this->object->getJupyterUser());
             $atpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
-                $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
+                $this->getViewModeDependentPathSegment() . '/' . $this->object->getEntryFilePath() . '?token=' . $this->object->getJupyterToken());
             $atpl->setVariable('PROXY_URL', $this->settings->getProxyUrl());
             $DIC->ui()->mainTemplate()->addJavaScript($this->object->getPlugin()->getDirectory() . '/js/jupyter_init.js');
         } catch (JupyterTransferException | ilCurlErrorCodeException | ilCurlConnectionException $e) {
@@ -350,7 +358,7 @@ class assJupyterGUI extends assQuestionGUI
 
         $this->object->pushLocalJupyterProject();
         $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
-            $this->getViewModeDependentPathSegment() . '/default.ipynb?token=' . $this->object->getJupyterToken());
+            $this->getViewModeDependentPathSegment() . '/' . $this->object->getEntryFilePath() . '?token=' . $this->object->getJupyterToken());
         $soltpl->setVariable('PROXY_URL', $this->settings->getProxyUrl());
 
         $qst_txt = $soltpl->get();

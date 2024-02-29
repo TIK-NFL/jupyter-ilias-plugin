@@ -187,7 +187,7 @@ class ilJupyterRESTController
     public function pullJupyterProjectMetaData($user, $user_token): array
     {
         // TODO: $jupyter_notebook_url uses a single notebook to infer meta data about the project.
-        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/main.ipynb";
         $response = $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true, true);
         if ($response['response_code'] == 200) {
             $response_json = json_decode($response['response_body'], true, 512, JSON_THROW_ON_ERROR);
@@ -231,7 +231,7 @@ class ilJupyterRESTController
      */
     public function pullJupyterNotebook($user, $user_token)
     {
-        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/main.ipynb";
         ilLoggerFactory::getLogger('jupyter')->debug("Pulling remote jupyter notebook from " . $jupyter_notebook_url);
         return $this->execCurlRequest($jupyter_notebook_url, 'GET', $user_token, '', true);
     }
@@ -242,7 +242,7 @@ class ilJupyterRESTController
      */
     public function pushJupyterNotebook($jupyter_notebook_json_str, $user, $user_token)
     {
-        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/default.ipynb";
+        $jupyter_notebook_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/contents/main.ipynb";
         ilLoggerFactory::getLogger('jupyter')->debug("Pushing local jupyter notebook '" . $jupyter_notebook_json_str . "' to " . $jupyter_notebook_url);
         $this->execCurlRequest($jupyter_notebook_url, 'PUT', $user_token, $jupyter_notebook_json_str, true);
     }

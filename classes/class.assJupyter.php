@@ -43,6 +43,7 @@ class assJupyter extends assQuestion
     private $jupyter_exercise_resource_id = '';
     private $jupyter_exercise_id = 0;
     private $jupyter_view_mode = '';
+    private $entry_file_path = '';
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
 
@@ -129,6 +130,15 @@ class assJupyter extends assQuestion
         $this->jupyter_view_mode = $jupyter_view_mode;
     }
 
+    public function getEntryFilePath(): string
+    {
+        return $this->entry_file_path;
+    }
+
+    public function setEntryFilePath(string $entry_file_path): void
+    {
+        $this->entry_file_path = $entry_file_path;
+    }
 
     function isComplete(): bool
     {
@@ -154,6 +164,7 @@ class assJupyter extends assQuestion
 					'jupyter_exercise_res_id'	=> array('text', (string) $this->getJupyterExerciseResourceId()),
 					'jupyter_exercise_id'	=> array('integer', (int) $this->getJupyterExerciseId()),
                     'jupyter_view_mode'	=> array('text', (string) $this->getJupyterViewMode()),
+                    'entry_file_path' => array('text', (string) $this->getEntryFilePath()),
 				)
 		);
 
@@ -193,6 +204,7 @@ class assJupyter extends assQuestion
                 $this->setJupyterExerciseResourceId((string)$data['jupyter_exercise_res_id']);
                 $this->setJupyterExerciseId((int)$data['jupyter_exercise_id']);
                 $this->setJupyterViewMode((string)$data['jupyter_view_mode']);
+                $this->setEntryFilePath((string)$data['entry_file_path']);
             }
         }
         parent::loadFromDb($question_id);
@@ -616,7 +628,7 @@ class assJupyter extends assQuestion
 
         //
         // Cleanup of temporary jupyter users only created by this ILIAS instance.
-        // Considered are only users containing a default jupyter notebook file (default.ipynb) the metadata of which match the given conditions.
+        // Considered are only users containing a default jupyter notebook file (main.ipynb) the metadata of which match the given conditions.
         //
         $jupyter_session_records = $this->db_ctrl->getTemporarySessionRecords();
         foreach ($jupyter_session_records as $record) {
