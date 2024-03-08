@@ -52,7 +52,7 @@ class ilassJupyterPlugin extends ilQuestionsPlugin
         spl_autoload_register(array($this, 'autoLoad'));
     }
 
-    private final function autoLoad($a_classname)
+    private function autoLoad($a_classname)
     {
         $class_file = $this->getClassesDirectory() . '/class.' . $a_classname . '.php';
         if (@include_once($class_file)) {

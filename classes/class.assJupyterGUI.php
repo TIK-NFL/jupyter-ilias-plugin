@@ -53,7 +53,7 @@ class assJupyterGUI extends assQuestionGUI
             $this->ctrl->setParameterByClass(strtolower($classname), "q_id", $_GET["q_id"]);
         }
 
-        if ($_GET["q_id"]) {
+        if (isset($_GET["q_id"])) {
             if ($ilAccess->checkAccess('write', '', $_GET["ref_id"])) {
                 // edit page
                 $ilTabs->addTarget("edit_content", $this->ctrl->getLinkTargetByClass("ilAssQuestionPageGUI", "edit"), array("edit", "insert", "exec_pg"), "", "");
@@ -88,7 +88,7 @@ class assJupyterGUI extends assQuestionGUI
         $this->addTab_QuestionHints($ilTabs);
 
         // Assessment of questions sub menu entry
-        if ($_GET["q_id"]) {
+        if (isset($_GET["q_id"])) {
             $ilTabs->addTarget("statistics", $this->ctrl->getLinkTargetByClass($classname, "assessment"), array("assessment"), $classname, "");
         }
 
@@ -99,7 +99,6 @@ class assJupyterGUI extends assQuestionGUI
         } else {
             $ilTabs->setBackTarget($this->lng->txt("qpl"), $this->ctrl->getLinkTargetByClass("ilobjquestionpoolgui", "questions"));
         }
-
     }
 
     protected function getPlugin()

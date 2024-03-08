@@ -28,12 +28,12 @@ class ilJupyterSession
         $this->rest_ctrl = new ilJupyterRESTController();
         $this->db_ctrl = new ilJupyterDBController();
 
-        if (!$_SESSION['jupyter_sessions']) {
+        if (!isset($_SESSION['jupyter_sessions'])) {
             $_SESSION['jupyter_sessions'] = array();
         }
 
         if ($session_id) {
-            if ($_SESSION['jupyter_sessions'][$session_id]) {
+            if (isset($_SESSION['jupyter_sessions'][$session_id])) {
                 $this->user_credentials = $_SESSION['jupyter_sessions'][$session_id];
                 $this->session_id = $session_id;
                 ilLoggerFactory::getLogger('jupyter')->debug("Reusing existent jupyter session with ID '" . $session_id . "'.");
@@ -53,7 +53,7 @@ class ilJupyterSession
 
     public function destroy()
     {
-        if ($_SESSION['jupyter_sessions'][$this->session_id]) {
+        if (isset($_SESSION['jupyter_sessions'][$this->session_id])) {
             ilLoggerFactory::getLogger('jupyter')->debug("Destroying jupyter session with ID '" . $this->session_id . "'.");
             unset($_SESSION['jupyter_sessions'][$this->session_id]);
         } else {
