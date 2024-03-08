@@ -38,50 +38,45 @@ class ilJupyterRESTController
      */
     public function execCurlRequest($url, $http_method, $auth_token = '', $payload = '', $exceptionOnErrorCode = false, $returnHttpCode = false, $returnHttpBody = true)
     {
-        try {
-            $this->curl = new ilCurlConnection($url);
-            $this->initCurlRequest();
+        $this->curl = new ilCurlConnection($url);
+        $this->initCurlRequest();
 
-            if ($http_method == 'POST') {
-                $this->curl->setOpt(CURLOPT_POST, true);
-            } else if ($http_method == 'PUT') {
-                $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
-            } else if ($http_method == 'DELETE') {
-                $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
-            } else if ($http_method == 'HEAD') {
-                $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
-                $this->curl->setOpt(CURLOPT_NOBODY, true);
-            }
-
-            $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: token ' . $auth_token));
-            $this->curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
-
-            if ($payload) {
-                $this->curl->setOpt(CURLOPT_POSTFIELDS, $payload);
-            }
-
-            $response_body = $this->curl->exec();
-            $response_code = (int)$this->curl->getInfo(CURLINFO_HTTP_CODE);
-
-            if ($exceptionOnErrorCode && $response_code >= 400) {
-                throw new ilCurlErrorCodeException("HTTP server responded with error code " . $response_code . ". (exceptionOnErrorCode set)", $response_code);
-            }
-            ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
-
-            if ($returnHttpCode && $returnHttpBody) {
-                return array(
-                    'response_code' => $response_code,
-                    'response_body' => $response_body
-                );
-            } else if ($returnHttpCode && !$returnHttpBody) {
-                return $response_code;
-            }
-            return $response_body;
-
-        } catch (ilCurlConnectionException $exception) {
-            ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
-            throw $exception;
+        if ($http_method == 'POST') {
+            $this->curl->setOpt(CURLOPT_POST, true);
+        } else if ($http_method == 'PUT') {
+            $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
+        } else if ($http_method == 'DELETE') {
+            $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
+        } else if ($http_method == 'HEAD') {
+            $this->curl->setOpt(CURLOPT_CUSTOMREQUEST, $http_method);
+            $this->curl->setOpt(CURLOPT_NOBODY, true);
         }
+
+        $this->curl->setOpt(CURLOPT_HTTPHEADER, array('Accept: application/json', 'Authorization: token ' . $auth_token));
+        $this->curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+
+        if ($payload) {
+            $this->curl->setOpt(CURLOPT_POSTFIELDS, $payload);
+        }
+
+        $response_body = $this->curl->exec();
+        $response_code = (int)$this->curl->getInfo(CURLINFO_HTTP_CODE);
+
+        if ($exceptionOnErrorCode && $response_code >= 400) {
+            throw new ilCurlErrorCodeException("HTTP server responded with error code " . $response_code . ". (exceptionOnErrorCode set)", $response_code);
+        }
+        ilLoggerFactory::getLogger('jupyter')->debug('HTTP response code: ' . $response_code);
+
+        if ($returnHttpCode && $returnHttpBody) {
+            return array(
+                'response_code' => $response_code,
+                'response_body' => $response_body
+            );
+        } else if ($returnHttpCode && !$returnHttpBody) {
+            return $response_code;
+        }
+
+        return $response_body;
     }
 
     /**
