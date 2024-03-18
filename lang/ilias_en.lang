@@ -19,3 +19,4 @@ jupyter_view_mode_option_classic#:#Classic Notebook
 jupyter_view_mode_option_lab#:#JupyterLab
 loading_time_warning#:#Warning: Larger files (e.g., raw files) can increase the loading time for this question.
 entry_file_path#:#Entry file path
+open_jupyter_in_new_window#:#Open Jupyter in a new window

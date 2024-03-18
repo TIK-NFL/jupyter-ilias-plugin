@@ -19,3 +19,4 @@ jupyter_view_mode_option_classic#:#Classic Notebook
 jupyter_view_mode_option_lab#:#JupyterLab
 loading_time_warning#:#Warnung: Größere Dateien (z.B. Rohdateien) können die Ladezeit für diese Frage erhöhen.
 entry_file_path#:#Pfad zur Eingangsdatei (entry point)
+open_jupyter_in_new_window#:#Jupyter im neuen Fenster öffnen

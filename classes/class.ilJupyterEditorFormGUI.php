@@ -50,6 +50,7 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
         $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_edit_frame.html', true, true);
         $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/lab?token=' . $this->jupyter_user_credentials['token']);
         $applet->setVariable('PROXY_URL', $settings->getProxyUrl());
+        $applet->setVariable('NEW_WINDOW_LINK_TEXT', $this->jupyterQuestion->getPlugin()->txt('open_jupyter_in_new_window'));
         $applet->setVariable("INFO", $this->jupyterQuestion->getPlugin()->txt('loading_time_warning'));
         return $applet->get();
     }
