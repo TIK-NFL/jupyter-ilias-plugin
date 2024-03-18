@@ -277,7 +277,7 @@ class assJupyterGUI extends assQuestionGUI
         $this->object->pushLocalJupyterProject();
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
-        $template = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
+        $template = $this->getPlugin()->getTemplate('tpl.jupyter_view_frame.html');
         $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
         $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
             $this->getViewModeDependentPathSegment() . '/' . $this->object->getEntryFilePath() . '?token=' . $this->object->getJupyterToken());
@@ -301,7 +301,7 @@ class assJupyterGUI extends assQuestionGUI
             }
         }
 
-        $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame_form.html');
+        $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_test_frame.html');
         $atpl->setVariable('QUESTION_TEXT', $this->object->getQuestion());
 
         try {
@@ -339,11 +339,11 @@ class assJupyterGUI extends assQuestionGUI
             case 'outUserPassDetails':
             case 'outUserListOfAnswerPasses':
                 // student template
-                $soltpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
+                $soltpl = $this->getPlugin()->getTemplate('tpl.jupyter_view_frame.html');
                 break;
             default:
                 // teacher template
-                $soltpl = $this->getPlugin()->getTemplate('tpl.jupyter_frame.html');
+                $soltpl = $this->getPlugin()->getTemplate('tpl.jupyter_view_frame.html');
         }
 
         if ($active_id > 0) {

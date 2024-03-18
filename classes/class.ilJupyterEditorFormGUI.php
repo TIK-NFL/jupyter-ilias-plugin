@@ -47,7 +47,7 @@ class ilJupyterEditorFormGUI extends ilFormPropertyGUI
     function getHtml()
     {
         $settings = ilJupyterSettings::getInstance();
-        $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_frame.html', TRUE, TRUE);
+        $applet = $this->jupyterQuestion->getPlugin()->getTemplate('tpl.jupyter_edit_frame.html', true, true);
         $applet->setVariable('IFRAME_SRC', $settings->getProxyUrl() . '/user/' . $this->jupyter_user_credentials['user'] . '/lab?token=' . $this->jupyter_user_credentials['token']);
         $applet->setVariable('PROXY_URL', $settings->getProxyUrl());
         $applet->setVariable("INFO", $this->jupyterQuestion->getPlugin()->txt('loading_time_warning'));
