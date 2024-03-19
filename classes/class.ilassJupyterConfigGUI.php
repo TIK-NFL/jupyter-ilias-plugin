@@ -63,11 +63,6 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $level->setValue($settings->getLogLevel());
         $form->addItem($level);
 
-        // Proxy URL
-        $proxy_url = new ilTextInputGUI($this->getPluginObject()->txt('proxy_url'), 'proxy_url');
-        $proxy_url->setValue($settings->getProxyUrl());
-        $form->addItem($proxy_url);
-
         // Jupyterhub server URL
         $jupyterhub_server_url = new ilTextInputGUI($this->getPluginObject()->txt('jupyterhub_server_url'), 'jupyterhub_server_url');
         $jupyterhub_server_url->setValue($settings->getJupyterhubServerUrl());
@@ -82,6 +77,11 @@ class ilassJupyterConfigGUI extends ilPluginConfigGUI
         $api_token = new ilTextInputGUI($this->getPluginObject()->txt('api_token'), 'api_token');
         $api_token->setValue($settings->getApiToken());
         $form->addItem($api_token);
+
+        // Proxy URL
+        $proxy_url = new ilTextInputGUI($this->getPluginObject()->txt('proxy_url'), 'proxy_url');
+        $proxy_url->setValue($settings->getProxyUrl());
+        $form->addItem($proxy_url);
 
         // Default jupyter project
         $default_jupyter_project = new ilTextAreaInputGUI($this->getPluginObject()->txt('default_jupyter_project'), 'default_jupyter_project');
