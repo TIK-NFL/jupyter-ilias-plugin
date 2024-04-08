@@ -138,22 +138,38 @@ class ilJupyterRESTController
     }
 
 
-    public function checkJupyterUser($user): bool
+    public function checkJupyterUser($user, $n_tries=1, $retry_in_sec=1): bool
     {
-        $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath() . "/users/" . $user, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
-        return $response_http_code == 200;
+        for ($i = 0; $i < $n_tries; $i++) {
+            $response_http_code = $this->execCurlRequest($this->jupyter_settings->getJupyterhubServerUrl() . $this->jupyter_settings->getJupyterhubApiPath() . "/users/" . $user, 'GET', $this->jupyter_settings->getApiToken(), '', false, true, false);
+            if ($response_http_code == 200) {
+                return true;
+            }
+            if ($i < $n_tries - 1) {
+                sleep($retry_in_sec);
+            }
+        }
+        return false;
     }
 
-    public function checkJupyterUserServer($user, $user_token): bool
+    public function checkJupyterUserServer($user, $user_token, $n_tries=1, $retry_in_sec=1): bool
     {
-        $jupyter_api_status_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/status";
-        $response_http_code = $this->execCurlRequest($jupyter_api_status_url, 'GET', $user_token, '', false, true, false);
-        return $response_http_code == 200;
+        for ($i = 0; $i < $n_tries; $i++) {
+            $jupyter_api_status_url = $this->jupyter_settings->getJupyterhubServerUrl() . "/user/" . $user . "/api/status";
+            $response_http_code = $this->execCurlRequest($jupyter_api_status_url, 'GET', $user_token, '', false, true, false);
+            if ($response_http_code == 200) {
+                return true;
+            }
+            if ($i < $n_tries - 1) {
+                sleep($retry_in_sec);
+            }
+        }
+        return false;
     }
 
     public function checkJupyterUserAndServer($user, $user_token): bool
     {
-        return $this->checkJupyterUser($user) && $this->checkJupyterUserServer($user, $user_token);
+        return $this->checkJupyterUser($user, 3) && $this->checkJupyterUserServer($user, $user_token, 3);
     }
 
     /**
