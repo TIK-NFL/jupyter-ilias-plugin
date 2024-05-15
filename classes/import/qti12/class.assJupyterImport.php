@@ -67,6 +67,9 @@ class assJupyterImport extends assQuestionImport
             }
         }
 
+        // anonymized jupyter user to be overridden upon new jupyter sessions
+        $this->object->setJupyterUser("import_anonymous");
+
         // -------------------------------------------------------------------------------------------------------------
         // QTI feedback
 
