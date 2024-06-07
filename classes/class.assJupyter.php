@@ -261,6 +261,11 @@ class assJupyter extends assQuestion
             $clone->setOwner($owner);
         }
 
+        // Copy the Jupyter resource for the cloned object.
+        $new_res_id = $this->resource_ctrl->copyJupyterResource($this->getJupyterExerciseResourceId());
+        $clone->setJupyterExerciseResourceId($new_res_id);
+
+
         if ($for_test) {
             $clone->saveToDb($original_id);
         } else {
@@ -301,6 +306,10 @@ class assJupyter extends assQuestion
             $clone->setTitle($targetQuestionTitle);
         }
 
+        // Copy the Jupyter resource for the cloned object.
+        $new_res_id = $this->resource_ctrl->copyJupyterResource($this->getJupyterExerciseResourceId());
+        $clone->setJupyterExerciseResourceId($new_res_id);
+
         $clone->saveToDb();
         // copy question page content
         $clone->copyPageOfQuestion($sourceQuestionId);
@@ -329,6 +338,11 @@ class assJupyter extends assQuestion
         if ($title) {
             $clone->setTitle($title);
         }
+
+        // Copy the Jupyter resource for the cloned object.
+        $new_res_id = $this->resource_ctrl->copyJupyterResource($this->getJupyterExerciseResourceId());
+        $clone->setJupyterExerciseResourceId($new_res_id);
+
         $clone->saveToDb();
 
         // copy question page content

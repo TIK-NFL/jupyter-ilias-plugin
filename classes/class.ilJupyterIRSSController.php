@@ -62,6 +62,15 @@ class ilJupyterIRSSController
         throw new ResourceNotFoundException("Could not find the resource with the id '" . $resource_id . "'." );
     }
 
+    public function copyJupyterResource(string $resource_id): string
+    {
+        $res_ident  = $this->resourceStorage->manage()->find($resource_id);
+        if ($res_ident !== null) {
+            return $this->resourceStorage->manage()->clone($res_ident);
+        }
+        throw new ResourceNotFoundException("Could not find the resource with the id '" . $resource_id . "'." );
+    }
+
     /**
      * @throws ResourceNotFoundException
      */
