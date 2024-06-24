@@ -65,3 +65,8 @@ Thus, the URL of the ILIAS instance executing this plugin needs to be allowed at
 
 #### Integration (optional)
 - Activate the manual scoring for Jupyter questions in **Administration → Repository and Objects → Test and Assessment**.
+
+### Cleanups
+
+Some stale Jupyter resources (e.g., deleted test results) are not automatically cleaned up by ILIAS.
+In order to automate this, we recommend installing and activating the [Jupyter cleanup plugin](https://github.com/TIK-NFL/jupyter-cleanup-ilias-plugin). 
