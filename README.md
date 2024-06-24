@@ -6,7 +6,7 @@ This plugin also uses the ILIAS internal data storage as a primary system to sto
 Test and assessment features like scoring, feedbacks and hints are supported.
 
 Note that Jupyterhub needs to be configured for plugin's normal operation.
-To this end, refer to the project [Integrable Jupyterhub](https://github.com/TIK-NFL/jupyterhub/tree/integrable).
+To this end, refer to the project [Embedded Jupyterhub](https://github.com/TIK-NFL/jupyterhub/tree/embedded).
 
 ![screenshot_0.png](doc/images/screenshot_0.png)
 
@@ -27,14 +27,14 @@ Thus, the URL of the ILIAS instance executing this plugin needs to be allowed at
 1. Access ILIAS and go to  **Administration  →  Extending ILIAS  →  Plugins**.
 2. On the  assJupyter  entry, click:  **Actions  →  Configure**.
 3. Refer to the following properties:
-   |                       Property | Description                                                                                          | Example value                                      |
-   |-------------------------------:|------------------------------------------------------------------------------------------------------|----------------------------------------------------|
-   |                      Log-Level | Webserver logging level                                                                              | DEBUG                                              |
-   |          Jupyterhub server URL | URL to the Jupyterhub installation including the REST API server                                     | `https://jupyterhub.example.edu/jupyter` |
-   |            Jupyterhub API path | Internal path to the API server                                                                      | `/hub/api`                                         |
-   |                      API token | API token for the REST server access                                                                 | `my-api-token`                                     |
-   |                      Proxy URL | URL to the local ILIAS webserver providing the ProxyPass (typically same as _Jupyterhub server URL_) | `https://jupyterhub.example.edu/jupyter`                        |
-   | Default Jupyter Project (JSON) | JSON of the initial Jupyter project (keep as general as possible)                                    | (see below)                                        |
+   |                       Property | Description                                                                                          | Example value                            |
+   |-------------------------------:|------------------------------------------------------------------------------------------------------|------------------------------------------|
+   |                      Log-Level | Webserver logging level                                                                              | DEBUG                                    |
+   |          Jupyterhub server URL | URL to the Jupyterhub installation including the REST API server                                     | `https://jupyterhub.mydomain.tld:8000`   |
+   |            Jupyterhub API path | Internal path to the API server                                                                      | `/hub/api`                               |
+   |                      API token | API token for the REST server access                                                                 | `my-api-token`                           |
+   |                      Proxy URL | URL to the local ILIAS webserver providing the ProxyPass (typically same as _Jupyterhub server URL_) | `https://jupyterhub.mydomain.tld:8000`   |
+   | Default Jupyter Project (JSON) | JSON of the initial Jupyter project (keep as general as possible)                                    | (see below)                              |
    
    _Example of a default Jupyter project containing a plain notebook (JSON):_
    ```
