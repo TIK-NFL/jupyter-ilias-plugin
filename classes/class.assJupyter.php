@@ -548,6 +548,8 @@ class assJupyter extends assQuestion
             throw new JupyterTransferException("Jupyter user is unset or the corresponding single user server is not running.");
         }
         $this->rest_ctrl->pushJupyterProject($jupyter_project_json, $this->jupyter_user, $this->jupyter_token);
+
+        return $jupyter_session;
     }
 
     /**

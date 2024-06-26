@@ -20,6 +20,8 @@ class assJupyterGUI extends assQuestionGUI
 {
     public static string $DEFAULT_VIEW_MODE = 'classic';
     public static string $DEFAULT_ENTRY_FILE_PATH = 'main.ipynb';
+    public static int $MAX_PARALLEL_PREVIEW_SESSIONS = 2;
+    private static string $PREVIEW_SESSION_USERS_FIELD = 'jupyter_preview_session_users';
     private ilJupyterRESTController $rest_ctrl;
     private ilJupyterIRSSController $resource_ctrl;
     private ilJupyterSettings $settings;
@@ -274,7 +276,15 @@ class assJupyterGUI extends assQuestionGUI
     {
         global $DIC;
         $tpl = $DIC->ui()->mainTemplate();
-        $this->object->pushLocalJupyterProject();
+
+        ilJupyterSession::initSessionField(self::$PREVIEW_SESSION_USERS_FIELD);
+
+        // Shut down residual preview sessions to spare Jupyter resources before creating a new one.
+        $this->terminateResidualJupyterPreviewSessions();
+
+        // Create a new preview session for the current question.
+        $preview_session = $this->object->pushLocalJupyterProject();
+        $_SESSION[self::$PREVIEW_SESSION_USERS_FIELD][] = $preview_session->getUserCredentials()['user'];
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_view_frame.html');
@@ -285,6 +295,26 @@ class assJupyterGUI extends assQuestionGUI
         $preview = $template->get();
         $preview = !$a_show_question_only ? $this->getILIASPage($preview) : $preview;
         return $preview;
+    }
+
+    /**
+     * Free resources by shutting down residual Jupyter sessions for previews
+     * except from last self::$MAX_PARALLEL_PREVIEW_SESSIONS ones.
+     */
+    private function terminateResidualJupyterPreviewSessions() {
+        $session_field = self::$PREVIEW_SESSION_USERS_FIELD;
+        $n_current_preview_sessions = sizeof($_SESSION[$session_field]);
+        $traversed = 0;
+        foreach ($_SESSION[$session_field] as $i => $jupyter_preview_session_user) {
+            // + 1 to include an upcoming preview session.
+            if ($traversed <  $n_current_preview_sessions - self::$MAX_PARALLEL_PREVIEW_SESSIONS + 1) {
+                $this->rest_ctrl->deleteJupyterUser($jupyter_preview_session_user, $this->settings->getApiToken());
+                unset($_SESSION[$session_field][$i]);
+                $traversed++;
+            } else {
+                break;
+            }
+        }
     }
 
     public function getTestOutput($active_id, $pass, $is_question_postponed, $user_post_solutions, $show_specific_inline_feedback)

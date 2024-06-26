@@ -28,9 +28,7 @@ class ilJupyterSession
         $this->rest_ctrl = new ilJupyterRESTController();
         $this->db_ctrl = new ilJupyterDBController();
 
-        if (!isset($_SESSION['jupyter_sessions'])) {
-            $_SESSION['jupyter_sessions'] = array();
-        }
+        self::initSessionField('jupyter_sessions');
 
         if ($session_id) {
             if (isset($_SESSION['jupyter_sessions'][$session_id])) {
@@ -82,6 +80,13 @@ class ilJupyterSession
             return $user_exists && $user_server_reachable;
         }
         return false;
+    }
+
+    public static function initSessionField($session_field)
+    {
+        if (!isset($_SESSION[$session_field])) {
+            $_SESSION[$session_field] = array();
+        }
     }
 
 }
