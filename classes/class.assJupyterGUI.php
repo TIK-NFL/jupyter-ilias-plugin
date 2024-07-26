@@ -288,7 +288,7 @@ class assJupyterGUI extends assQuestionGUI
 
         include_once './Services/UICore/classes/class.ilTemplate.php';
         $template = $this->getPlugin()->getTemplate('tpl.jupyter_view_frame.html');
-        $template->setVariable('QUESTION_TEXT', $this->object->getQuestion());
+        $template->setVariable('QUESTION_TEXT', ilLegacyFormElementsUtil::prepareTextareaOutput($this->object->getQuestion()));
         $template->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
             $this->getViewModeDependentPathSegment() . '/' . $this->object->getEntryFilePath() . '?token=' . $this->object->getJupyterToken());
         $template->setVariable('PROXY_URL', $this->settings->getProxyUrl());
@@ -332,7 +332,10 @@ class assJupyterGUI extends assQuestionGUI
         }
 
         $atpl = $this->getPlugin()->getTemplate('tpl.jupyter_test_frame.html');
-        $atpl->setVariable('QUESTION_TEXT', $this->object->getQuestion());
+        $atpl->setVariable(
+            'QUESTION_TEXT',
+            ilLegacyFormElementsUtil::prepareTextareaOutput($this->object->getQuestion())
+        );
 
         try {
             global $DIC;
@@ -386,6 +389,11 @@ class assJupyterGUI extends assQuestionGUI
         }
 
         $this->object->pushLocalJupyterProject();
+
+        $soltpl->setVariable(
+            'QUESTION_TEXT',
+            ilLegacyFormElementsUtil::prepareTextareaOutput($this->object->getQuestion(), true)
+        );
         $soltpl->setVariable('IFRAME_SRC', $this->settings->getProxyUrl() . '/user/' . $this->object->getJupyterUser() .
             $this->getViewModeDependentPathSegment() . '/' . $this->object->getEntryFilePath() . '?token=' . $this->object->getJupyterToken());
         $soltpl->setVariable('PROXY_URL', $this->settings->getProxyUrl());
@@ -401,7 +409,10 @@ class assJupyterGUI extends assQuestionGUI
             }
         }
         if (strlen($feedback)) {
-            $solutiontemplate->setVariable("FEEDBACK", $this->object->prepareTextareaOutput($feedback, true));
+            $solutiontemplate->setVariable(
+                "FEEDBACK",
+                ilLegacyFormElementsUtil::prepareTextareaOutput($feedback, true)
+            );
         }
 
         $solutiontemplate->setVariable("SOLUTION_OUTPUT", $qst_txt);
