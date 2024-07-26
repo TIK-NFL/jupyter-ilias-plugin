@@ -78,7 +78,7 @@ class assJupyterExport extends assQuestionExport
         $a_xml_writer->xmlStartTag("presentation", $attrs);
         $a_xml_writer->xmlStartTag("flow");
 
-        $this->object->addQTIMaterial($a_xml_writer, $this->object->getQuestion());
+        $this->addQTIMaterial($a_xml_writer, $this->object->getQuestion());
 
         $a_xml_writer->xmlStartTag("material");
 
@@ -144,7 +144,7 @@ class assJupyterExport extends assQuestionExport
             $a_xml_writer->xmlStartTag("itemfeedback", $attrs);
             // qti flow_mat
             $a_xml_writer->xmlStartTag("flow_mat");
-            $this->object->addQTIMaterial($a_xml_writer, $feedback_allcorrect);
+            $this->addQTIMaterial($a_xml_writer, $feedback_allcorrect);
             $a_xml_writer->xmlEndTag("flow_mat");
             $a_xml_writer->xmlEndTag("itemfeedback");
         }
@@ -153,7 +153,7 @@ class assJupyterExport extends assQuestionExport
             $a_xml_writer->xmlStartTag("itemfeedback", $attrs);
             // qti flow_mat
             $a_xml_writer->xmlStartTag("flow_mat");
-            $this->object->addQTIMaterial($a_xml_writer, $feedback_onenotcorrect);
+            $this->addQTIMaterial($a_xml_writer, $feedback_onenotcorrect);
             $a_xml_writer->xmlEndTag("flow_mat");
             $a_xml_writer->xmlEndTag("itemfeedback");
         }

@@ -18,7 +18,7 @@ class assJupyterImport extends assQuestionImport
      *
      * Receives parameters from a QTI parser and creates a valid ILIAS question object
      *
-     * @param object $item The QTI item object
+     * @param ilQtiItem $item The QTI item object
      * @param integer $questionpool_id The id of the parent questionpool
      * @param integer $tst_id The id of the parent test if the question is part of a test
      * @param object $tst_object A reference to the parent test object
@@ -127,7 +127,7 @@ class assJupyterImport extends assQuestionImport
         $this->object->setComment($item->getComment());
         $this->object->setAuthor($item->getAuthor());
         $this->object->setOwner($ilUser->getId());
-        $this->object->setQuestion($this->object->QTIMaterialToString($item->getQuestiontext()));
+        $this->object->setQuestion($this->QTIMaterialToString($item->getQuestiontext()));
         $this->object->setObjId($questionpool_id);
         $this->object->setAdditionalContentEditingMode($this->fetchAdditionalContentEditingModeInformation($item));
         $this->object->saveToDb();
@@ -136,7 +136,7 @@ class assJupyterImport extends assQuestionImport
         // MOB replacements
 
         foreach ($feedbacksgeneric as $correctness => $material) {
-            $m = $this->object->QTIMaterialToString($material);
+            $m = $this->QTIMaterialToString($material);
             $feedbacksgeneric[$correctness] = $m;
         }
 
@@ -157,7 +157,8 @@ class assJupyterImport extends assQuestionImport
                 /* @var ILIAS\DI\Container $DIC */
                 $DIC['ilLog']->write(__METHOD__ . ': import mob from dir: ' . $importfile);
 
-                $media_object = &ilObjMediaObject::_saveTempFileAsMediaObject(basename($importfile), $importfile, false);
+                $ilObjMediaObject = ilObjMediaObject::_saveTempFileAsMediaObject(basename($importfile), $importfile, false);
+                $media_object = &$ilObjMediaObject;
                 ilObjMediaObject::_saveUsage($media_object->getId(), "qpl:html", $this->object->getId());
                 $questiontext = str_replace("src=\"" . $mob["mob"] . "\"", "src=\"" . "il_" . IL_INST_ID . "_mob_" . $media_object->getId() . "\"", $questiontext);
                 foreach ($feedbacksgeneric as $correctness => $material) {

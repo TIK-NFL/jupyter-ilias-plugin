@@ -31,7 +31,6 @@ class assJupyterGUI extends assQuestionGUI
     {
         parent::__construct($a_id);
         $this->object = new assJupyter();
-        $this->newUnitId = null;
         $this->settings = ilJupyterSettings::getInstance();
         $this->rest_ctrl = new ilJupyterRESTController();
         $this->resource_ctrl = new ilJupyterIRSSController();

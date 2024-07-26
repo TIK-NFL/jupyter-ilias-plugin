@@ -143,3 +143,7 @@ if (!$ilDB->tableExists('il_qpl_qst_jupyter_dsr')) {
     );
 }
 ?>
+<#4>
+<?php
+$ilDB->manipulate("UPDATE qpl_qst_type SET plugin_name = 'assJupyter' WHERE type_tag = 'assJupyter'");
+?>

@@ -38,12 +38,12 @@ include_once "./Modules/Test/classes/inc.AssessmentConstants.php";
 class assJupyter extends assQuestion
 {
     const ADDITIONAL_TBL_NAME = 'il_qpl_qst_jupyter';
-    private $jupyter_user = '';
-    private $jupyter_token = '';
-    private $jupyter_exercise_resource_id = '';
-    private $jupyter_exercise_id = 0;
-    private $jupyter_view_mode = '';
-    private $entry_file_path = '';
+    private string $jupyter_user = '';
+    private string $jupyter_token = '';
+    private string $jupyter_exercise_resource_id = '';
+    private int $jupyter_exercise_id = 0;
+    private string $jupyter_view_mode = '';
+    private string $entry_file_path = '';
     private $plugin;
     private ilJupyterRESTController $rest_ctrl;
 
@@ -53,16 +53,8 @@ class assJupyter extends assQuestion
 
     private ilJupyterSettings $jupyter_settings;
 
-    /**
-     * @param string $title A title string to describe the question
-     * @param string $comment A comment string to describe the question
-     * @param string $author A string containing the name of the questions author
-     * @param integer $owner A numerical ID to identify the owner/creator
-     * @param string $question The question string of the single choice question
-     * @access public
-     * @see assQuestion:assQuestion()
-     */
-    public function __construct($title = "", $comment = "", $author = "", $owner = -1, $question = "")
+
+    public function __construct(string $title = "", string $comment = "", string $author = "", int $owner = -1, string $question = "")
     {
         parent::__construct($title, $comment, $author, $owner, $question);
         $this->plugin = ilassJupyterPlugin::getInstance();
@@ -72,10 +64,7 @@ class assJupyter extends assQuestion
         $this->jupyter_settings = ilJupyterSettings::getInstance();
     }
 
-    /**
-     * @return ilassJupyterPlugin The plugin object
-     */
-    public function getPlugin()
+    public function getPlugin(): ilassJupyterPlugin
     {
         return $this->plugin;
     }
@@ -85,7 +74,7 @@ class assJupyter extends assQuestion
         $this->jupyter_token = $jupyter_token;
     }
 
-    public function getJupyterToken()
+    public function getJupyterToken(): string
     {
         return $this->jupyter_token;
     }
@@ -95,7 +84,7 @@ class assJupyter extends assQuestion
         $this->jupyter_exercise_resource_id = $res_id;
     }
 
-    public function getJupyterExerciseResourceId()
+    public function getJupyterExerciseResourceId(): string
     {
         return $this->jupyter_exercise_resource_id;
     }
@@ -105,7 +94,7 @@ class assJupyter extends assQuestion
         $this->jupyter_exercise_id = $a_exc;
     }
 
-    public function getJupyterExerciseId()
+    public function getJupyterExerciseId(): int
     {
         return $this->jupyter_exercise_id;
     }
@@ -158,13 +147,13 @@ class assJupyter extends assQuestion
 		$ilDB->insert(
 				$this->getAdditionalTableName(),
 				array(
-					'question_fi'	=> array('integer',(int) $this->getId()),
-					'jupyter_user'	=> array('text', (string) $this->getJupyterUser()),
-					'jupyter_token'	=> array('text', (string) $this->getJupyterToken()),
-					'jupyter_exercise_res_id'	=> array('text', (string) $this->getJupyterExerciseResourceId()),
-					'jupyter_exercise_id'	=> array('integer', (int) $this->getJupyterExerciseId()),
-                    'jupyter_view_mode'	=> array('text', (string) $this->getJupyterViewMode()),
-                    'entry_file_path' => array('text', (string) $this->getEntryFilePath()),
+					'question_fi' => array('integer', $this->getId()),
+					'jupyter_user' => array('text', $this->getJupyterUser()),
+					'jupyter_token'	=> array('text', $this->getJupyterToken()),
+					'jupyter_exercise_res_id' => array('text', $this->getJupyterExerciseResourceId()),
+					'jupyter_exercise_id' => array('integer', $this->getJupyterExerciseId()),
+                    'jupyter_view_mode' => array('text', $this->getJupyterViewMode()),
+                    'entry_file_path' => array('text', $this->getEntryFilePath()),
 				)
 		);
 
@@ -184,7 +173,6 @@ class assJupyter extends assQuestion
             $this->setId($question_id);
             $this->setTitle($data["title"] ?? "");
             $this->setComment($data["description"] ?? "");
-            $this->setSuggestedSolution($data["solution_hint"] ?? "");
             $this->setOriginalId($data["original_id"]);
             $this->setObjId($data["obj_fi"] ?? 0);
             $this->setAuthor($data["author"] ?? "");
@@ -210,30 +198,13 @@ class assJupyter extends assQuestion
         parent::loadFromDb($question_id);
     }
 
-    function queryGetJupyterUserToken($question_id): ?string
-    {
-        global $ilDB;
-        $result = $ilDB->queryF("SELECT * FROM " . $this->getAdditionalTableName() . " WHERE question_fi = %s", array('integer'), array($question_id));
-        return $ilDB->fetchAssoc($result)['jupyter_token'] ?: $result->numRows() == 1;
-    }
-
     function updateJupyterUserToken($question_id, $jupyter_user, $jupyter_token)
     {
         global $ilDB;
         $ilDB->manipulateF("UPDATE " . $this->getAdditionalTableName() . " SET jupyter_user = %s, jupyter_token = %s WHERE question_fi = %s", array('string', 'string', 'integer'), array($jupyter_user, $jupyter_token, $question_id));
     }
 
-    /**
-     * Duplicates a jupyter question.
-     *
-     * @param $for_test
-     * @param $title
-     * @param $author
-     * @param $owner
-     * @param $a_test_obj_id
-     * @return int
-     */
-    public function duplicate($for_test = true, $title = "", $author = "", $owner = "", $a_test_obj_id = null): int
+    public function duplicate($for_test = true, $title = "", $author = "", $owner = "", $testObjId = null): int
     {
         if ($this->id <= 0) {
             // The question has not been saved. It cannot be duplicated
@@ -243,11 +214,11 @@ class assJupyter extends assQuestion
         $this_id = $this->getId();
         $clone = clone $this;
         include_once("./Modules/TestQuestionPool/classes/class.assQuestion.php");
-        $original_id = assQuestion::_getOriginalId($this->id);
+        $original_id = $this->questioninfo->getOriginalId($this->id);
         $clone->id = -1;
 
-        if ((int)$a_test_obj_id > 0) {
-            $clone->setObjId($a_test_obj_id);
+        if ((int)$testObjId > 0) {
+            $clone->setObjId($testObjId);
         }
 
         if ($title) {
@@ -278,17 +249,16 @@ class assJupyter extends assQuestion
         // copy XHTML media objects
         $clone->copyXHTMLMediaObjectsOfQuestion($this_id);
 
-        $clone->onDuplicate((int)$a_test_obj_id, $this_id, $clone->getObjId(), $clone->getId());
+        $clone->onDuplicate((int)$testObjId, $this_id, $clone->getObjId(), $clone->getId());
 
         return $clone->id;
     }
 
 
-    public function createNewOriginalFromThisDuplicate($targetParentId, $targetQuestionTitle = "")
+    public function createNewOriginalFromThisDuplicate($targetParentId, $targetQuestionTitle = ""): int
     {
-        if ($this->id <= 0) {
-            // The question has not been saved. It cannot be duplicated
-            return;
+        if ($this->getId() <= 0) {
+            throw new RuntimeException('The question has not been saved. It cannot be duplicated');
         }
 
         include_once("./Modules/TestQuestionPool/classes/class.assQuestion.php");
@@ -322,18 +292,17 @@ class assJupyter extends assQuestion
     }
 
 
-    function copyObject($target_questionpool, $title = "")
+    function copyObject($target_questionpool, $title = ""): int
     {
-        if ($this->id <= 0) {
-            // The question has not been saved. It cannot be duplicated
-            return;
+        if ($this->getId() <= 0) {
+            throw new RuntimeException('The question has not been saved. It cannot be duplicated');
         }
+
         // duplicate the question in database
         $clone = $this;
         include_once("./Modules/TestQuestionPool/classes/class.assQuestion.php");
-        $original_id = assQuestion::_getOriginalId($this->id);
+        $original_id = $this->questioninfo->getOriginalId($this->id);
         $clone->id = -1;
-        $source_questionpool = $this->getObjId();
         $clone->setObjId($target_questionpool);
         if ($title) {
             $clone->setTitle($title);
@@ -371,22 +340,22 @@ class assJupyter extends assQuestion
      * Returns the points, a learner has reached answering the question
      * The points are calculated from the given answers including checks
      * for all special scoring options in the test container.
-     *
-     * @param integer $user_id The database ID of the learner
-     * @param integer $test_id The database Id of the test containing the question
-     * @param boolean $returndetails (deprecated !!)
-     * @access public
      */
-    function calculateReachedPoints($active_id, $pass = NULL, $authorizedSolution = true, $returndetails = FALSE)
+    function calculateReachedPoints($active_id, $pass = null, $authorizedSolution = true, $returndetails = false): float
     {
         global $ilDB;
 
         if (is_null($pass)) {
             $pass = $this->getSolutionMaxPass($active_id);
         }
-        $result = $ilDB->queryF("SELECT * FROM tst_solutions WHERE active_fi = %s AND question_fi = %s AND pass = %s", array('integer', 'integer', 'integer'), array($active_id, $this->getId(), $pass));
 
-        $points = 0;
+        $result = $ilDB->queryF(
+            "SELECT * FROM tst_solutions WHERE active_fi = %s AND question_fi = %s AND pass = %s",
+            array('integer', 'integer', 'integer'),
+            array($active_id, $this->getId(), $pass)
+        );
+
+        $points = 0.0;
         while ($data = $ilDB->fetchAssoc($result)) {
             $points += $data["points"];
         }
@@ -398,7 +367,7 @@ class assJupyter extends assQuestion
      * @param $solution
      * @return int Zero since instant feedback is not supported by Jupyter
      */
-    protected function calculateReachedPointsForSolution($solution)
+    protected function calculateReachedPointsForSolution($solution): int
     {
         return 0;
     }
@@ -470,17 +439,6 @@ class assJupyter extends assQuestion
 			)
 		);
 
-        include_once("./Modules/Test/classes/class.ilObjAssessmentFolder.php");
-        if (strlen($solution)) {
-            if (ilObjAssessmentFolder::_enabledAssessmentLogging()) {
-                $this->logAction($this->lng->txtlng("assessment", "log_user_entered_values", ilObjAssessmentFolder::_getLogLanguage()), $active_id, $this->getId());
-            }
-        } else {
-            if (ilObjAssessmentFolder::_enabledAssessmentLogging()) {
-                $this->logAction($this->lng->txtlng("assessment", "log_user_not_entered_values", ilObjAssessmentFolder::_getLogLanguage()), $active_id, $this->getId());
-            }
-        }
-
         return true;
     }
 
@@ -536,7 +494,7 @@ class assJupyter extends assQuestion
      * @throws JupyterTransferException
      * @throws JsonException
      */
-    public function pushLocalJupyterProject()
+    public function pushLocalJupyterProject(): ilJupyterSession
     {
         $jupyter_session = new ilJupyterSession();
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
@@ -558,7 +516,8 @@ class assJupyter extends assQuestion
      * @throws ilCurlErrorCodeException
      * @throws JsonException
      */
-    public function pullRemoteJupyterProject($user_credentials) {
+    public function pullRemoteJupyterProject($user_credentials): string
+    {
         if (!$this->rest_ctrl->checkJupyterUserAndServer($user_credentials['user'], $user_credentials['token'])) {
             throw new JupyterTransferException("Jupyter user is unset or the corresponding single user server is not running.");
         }
@@ -578,7 +537,7 @@ class assJupyter extends assQuestion
      * @param $jupyter_project_json
      * @return array
      */
-    public function pushTemporaryJupyterProject($jupyter_project_json)
+    public function pushTemporaryJupyterProject($jupyter_project_json): array
     {
         $jupyter_session = new ilJupyterSession();
         $jupyter_user_credentials = $jupyter_session->getUserCredentials();
@@ -607,7 +566,7 @@ class assJupyter extends assQuestion
             try {
                 ilLoggerFactory::getLogger('jupyter')->info("Cleaning up stale solution resource with ID '" . $rid . "'");
                 $this->resource_ctrl->deleteJupyterResource($rid);
-            } catch (ResourceNotFoundException $rnfe) {
+            } catch (ResourceNotFoundException) {
                 // do nothing.
             } finally {
                 // delete the resource id record, even if the resource is not present on the resource storage.
@@ -670,19 +629,9 @@ class assJupyter extends assQuestion
 
 
     /**
-     * @param type $active_id
-     * @param type $pass
-     * @param type $obligationsAnswered
-     * @param type $authorized
-     */
-    public function reworkWorkingData($active_id, $pass, $obligationsAnswered, $authorized)
-    {
-    }
-
-    /**
      * Returns the question type of the question
      *
-     * @return integer The question type of the question
+     * @return string The question type of the question
      * @access public
      */
     function getQuestionType(): string
@@ -698,7 +647,7 @@ class assJupyter extends assQuestion
      * @return string The additional table name
      * @access public
      */
-    function getAdditionalTableName()
+    function getAdditionalTableName(): string
     {
         return self::ADDITIONAL_TBL_NAME;
     }
@@ -709,7 +658,7 @@ class assJupyter extends assQuestion
      * @return string The answer table name
      * @access public
      */
-    function getAnswerTableName()
+    function getAnswerTableName(): string
     {
         return "";
     }
@@ -720,44 +669,15 @@ class assJupyter extends assQuestion
      * @param integer $question_id The question id which should be deleted in the answers table
      * @access public
      */
-    public function deleteAnswers($question_id): void
+    public function deleteAnswers(int $question_id): void
     {
     }
 
-    /**
-     * Collects all text in the question which could contain media objects
-     * which were created with the Rich Text Editor
-     */
     function getRTETextWithMediaObjects(): string
     {
-        $text = parent::getRTETextWithMediaObjects();
-        return $text;
+        return parent::getRTETextWithMediaObjects();
     }
 
-    /**
-     * @param object $worksheet Reference to the parent excel worksheet
-     * @param object $startrow Startrow of the output in the excel worksheet
-     * @param object $active_id Active id of the participant
-     * @param object $pass Test pass
-     */
-    public function setExportDetailsXLS($worksheet, $startrow, $active_id, $pass): int
-    {
-        return parent::setExportDetailsXLS($worksheet, $startrow, $active_id, $pass);
-    }
-
-    /**
-     * Creates a question from a QTI file
-     *
-     * Receives parameters from a QTI parser and creates a valid ILIAS question object
-     *
-     * @param object $item The QTI item object
-     * @param integer $questionpool_id The id of the parent questionpool
-     * @param integer $tst_id The id of the parent test if the question is part of a test
-     * @param object $tst_object A reference to the parent test object
-     * @param integer $question_counter A reference to a question counter to count the questions of an imported question pool
-     * @param array $import_mapping An array containing references to included ILIAS objects
-     * @access public
-     */
     public function fromXML($item, int $questionpool_id, ?int $tst_id, &$tst_object, int &$question_counter, array $import_mapping, array &$solutionhints = []): array
     {
         $this->getPlugin()->includeClass("./import/qti12/class." . $this->getQuestionType() . "Import.php");
@@ -776,13 +696,6 @@ class assJupyter extends assQuestion
         return $import_mapping;
     }
 
-    /**
-     * Returns a QTI xml representation of the question and sets the internal
-     * domxml variable with the DOM XML representation of the QTI xml representation
-     *
-     * @return string The QTI xml representation of the question
-     * @access public
-     */
     function toXML($a_include_header = true, $a_include_binary = true, $a_shuffle = false, $test_output = false, $force_image_references = false): string
     {
         $this->getPlugin()->includeClass("./export/qti12/class." . $this->getQuestionType() . "Export.php");
@@ -797,7 +710,7 @@ class assJupyter extends assQuestion
      * @return array An associated array containing the best solution
      * @access public
      */
-    public function getBestSolution($active_id, $pass)
+    public function getBestSolution($active_id, $pass): array
     {
         return array();
     }
@@ -819,7 +732,7 @@ class assJupyter extends assQuestion
      * @param int $pass
      * @return    array        ['authorized' => bool, 'intermediate' => bool]
      */
-    public function lookupForExistingSolutions($activeId, $pass): array
+    public function lookupForExistingSolutions(int $activeId, int $pass): array
     {
         $state = parent::lookupForExistingSolutions($activeId, $pass);
         $state['intermediate'] = true;
