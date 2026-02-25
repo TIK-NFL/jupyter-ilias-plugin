@@ -1,3 +1,6 @@
+> [!WARNING]  
+> This plugin has been discontinued as of February 25, 2026.
+
 ## Jupyter plugin for ILIAS
 
 This plugin introduces a new question type which enables for testing and assessing Jupyter notebooks within the ILIAS platform.
